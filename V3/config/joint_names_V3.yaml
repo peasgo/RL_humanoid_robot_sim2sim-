@@ -1,0 +1,1 @@
+controller_joint_names: ['', 'Waist', 'Waist_2', 'RSDp', 'RSDy', 'RSDr', 'RARMp', 'RARMAP', 'RARMAy', 'LSDp', 'LSDy', 'LSDr', 'LARMp', 'LARMAp', 'LARMAy', 'RHIPp', 'RHIPy', 'RHIPr', 'RKNEEP', 'RANKLEp', 'RANKLEy', 'LHIPp', 'LHIPy', 'LHIPr', 'LKNEEp', 'LANKLEp', 'LANKLEy', ]

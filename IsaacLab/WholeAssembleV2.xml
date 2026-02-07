@@ -1,0 +1,83 @@
+<mujoco model="WholeAssembleV2">
+  <compiler angle="radian"/>
+
+  <asset>
+    <mesh name="base_link" file="base_link.STL"/>
+    <mesh name="RThighP" file="RThighP.STL"/>
+    <mesh name="RThighY" file="RThighY.STL"/>
+    <mesh name="RThighR" file="RThighR.STL"/>
+    <mesh name="RShankP" file="RShankP.STL"/>
+    <mesh name="RFootP" file="RFootP.STL"/>
+    <mesh name="RFootR" file="RFootR.STL"/>
+    <mesh name="LThighP" file="LThighP.STL"/>
+    <mesh name="LThighY" file="LThighY.STL"/>
+    <mesh name="LThighR" file="LThighR.STL"/>
+    <mesh name="LShankP" file="LShankP.STL"/>
+    <mesh name="LFootP" file="LFootP.STL"/>
+    <mesh name="LFootR" file="LFootR.STL"/>
+  </asset>
+
+  <worldbody>
+    <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="base_link"/>
+    <body name="RThighP" pos="0.017714 0 0" quat="0.739176 0.673512 0 0">
+      <inertial pos="0.0296 -0.0145 -0.0121" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+      <joint name="RHipP" pos="0 0 0" axis="-1 0 0" range="-1 1" actuatorfrcrange="-150 150"/>
+      <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="RThighP"/>
+      <body name="RThighY" pos="0.047436 0.01 -0.00611">
+        <inertial pos="-0.0027 -0.0433 -0.0122" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+        <joint name="RHipY" pos="0 0 0" axis="0 -0.15469 -0.987963" range="-0.5 0.5" actuatorfrcrange="-150 150"/>
+        <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="RThighY"/>
+        <body name="RThighR" pos="-0.0052192 -0.059002 0.0025558" quat="0.999355 0.0359053 0 0">
+          <inertial pos="-0.0001 -0.0633 -0.0045" mass="0.8" diaginertia="0.002 0.002 0.002"/>
+          <joint name="RHipR" pos="0 0 0" axis="0 -1 0" range="-0.5 0.5" actuatorfrcrange="-150 150"/>
+          <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="RThighR"/>
+          <body name="RShankP" pos="0 -0.09088 0" quat="0.999466 -0.0326887 0 0">
+            <inertial pos="0.0072 -0.0378 -0.0074" mass="0.6" diaginertia="0.002 0.002 0.002"/>
+            <joint name="RKneeP" pos="0 0 0" axis="1 0 0" range="-2 0.2" actuatorfrcrange="-150 150"/>
+            <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="RShankP"/>
+            <body name="RFootP" pos="0 -0.14 0" quat="0.999066 0.0432011 0 0">
+              <inertial pos="0 0 0" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+              <joint name="RAankleP" pos="0 0 0" axis="-1 0 0" range="-0.5 0.5" actuatorfrcrange="-50 50"/>
+              <geom type="mesh" rgba="0.65 0.62 0.59 1" mesh="RFootP"/>
+              <body name="RFootR">
+                <inertial pos="0 -0.0174 -0.0244" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+                <joint name="RAnkleR" pos="0 0 0" axis="0 0 1" range="-0.3 0.3" actuatorfrcrange="-50 50"/>
+                <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="RFootR"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="LThighP" pos="-0.022372 0 0" quat="0.713335 0.700822 0.000456284 -0.0012193">
+      <inertial pos="-0.0268 -0.0161 -0.0116" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+      <joint name="LHipP" pos="0 0 0" axis="1 0 0" range="-1 1" actuatorfrcrange="-150 150"/>
+      <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="LThighP"/>
+      <body name="LThighY" pos="-0.032075 5.5879e-05 -6.6114e-05">
+        <inertial pos="-0.0085 -0.0345 -0.0158" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+        <joint name="LHipY" pos="0 0 0" axis="0 -0.225191 -0.974315" range="-0.5 0.5" actuatorfrcrange="-150 150"/>
+        <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="LThighY"/>
+        <body name="LThighR" pos="-0.006 -0.04904 0">
+          <inertial pos="-0.003 -0.0627 -0.0046" mass="0.8" diaginertia="0.002 0.002 0.002"/>
+          <joint name="LHipR" pos="0 0 0" axis="0 -1 0" range="-0.5 0.5" actuatorfrcrange="-150 150"/>
+          <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="LThighR"/>
+          <body name="LShankP" pos="0 -0.09088 -1e-05" quat="0.999287 -0.0377545 0 0">
+            <inertial pos="-0.011 -0.0393 -0.0077" mass="0.6" diaginertia="0.002 0.002 0.002"/>
+            <joint name="LKneeP" pos="0 0 0" axis="1 0 0" range="-2 0.5" actuatorfrcrange="-150 150"/>
+            <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="LShankP"/>
+            <body name="LFootP" pos="0 -0.14 0" quat="0.998914 0.0465881 0 0">
+              <inertial pos="-0.0035 0 0" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+              <joint name="LAnkleP" pos="0 0 0" axis="-1 0 0" range="-0.5 0.5" actuatorfrcrange="-50 50"/>
+              <geom type="mesh" rgba="0.65 0.62 0.59 1" mesh="LFootP"/>
+              <body name="LFootR" pos="-0.0035 0 0">
+                <inertial pos="0 -0.0174 -0.0244" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+                <joint name="LAnkleR" pos="0 0 0" axis="0 0 1" range="-0.3 0.3" actuatorfrcrange="-50 50"/>
+                <geom type="mesh" rgba="0.79 0.82 0.93 1" mesh="LFootR"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

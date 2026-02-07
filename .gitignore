@@ -1,0 +1,18 @@
+
+# VSCode (keep locally, don't commit)
+.vscode/
+
+# logs & outputs
+outputs/
+MUJOCO_LOG.TXT
+
+# large artifacts
+*.h5
+trajectory_recording.h5
+*.zip
+
+# VSCode (all)
+**/.vscode/
+
+# ignore big data by default
+**/*.zip

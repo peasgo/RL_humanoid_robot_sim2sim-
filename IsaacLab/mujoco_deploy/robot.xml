@@ -1,0 +1,159 @@
+<mujoco model="MyRobot_Entity">
+    <compiler angle="radian" meshdir="assets" autolimits="true"/>
+
+    <default>
+        <default class="myrobot">
+            <joint damping="1" armature="0.1" frictionloss="0.0"/>
+          <!-- MuJoCo friction = (sliding, torsional, rolling). Use non-zero
+              torsional/rolling to avoid the feet behaving like they're on ice. -->
+          <geom condim="3" friction="1.0 0.05 0.001" contype="1" conaffinity="1"/>
+        </default>
+        <default class="visual">
+            <geom type="mesh" contype="0" conaffinity="0" group="2" material="metal"/>
+        </default>
+        <default class="collision">
+            <geom type="mesh" group="1"/>
+        </default>
+    </default>
+
+    <asset>
+        <mesh name="base_link" file="base_link.STL"/>
+        <mesh name="RThighP" file="RThighP.STL"/>
+        <mesh name="RThighY" file="RThighY.STL"/>
+        <mesh name="RThighR" file="RThighR.STL"/>
+        <mesh name="RShankP" file="RShankP.STL"/>
+        <mesh name="RFootP" file="RFootP.STL"/>
+        <mesh name="RFootR" file="RFootR.STL"/>
+        <mesh name="LThighP" file="LThighP.STL"/>
+        <mesh name="LThighY" file="LThighY.STL"/>
+        <mesh name="LThighR" file="LThighR.STL"/>
+        <mesh name="LShankP" file="LShankP.STL"/>
+        <mesh name="LFootP" file="LFootP.STL"/>
+        <mesh name="LFootR" file="LFootR.STL"/>
+        <material name="metal" rgba="0.8 0.8 0.8 1"/>
+    </asset>
+
+    <worldbody>
+        <body name="base_link" pos="0 0 0.30" childclass="myrobot">
+            <freejoint/>
+            <!-- 显式添加惯性参数，覆盖自动计算 -->
+            <inertial pos="0 0 0" mass="10" diaginertia="0.1 0.1 0.1"/>
+            
+            <geom type="mesh" mesh="base_link" class="visual" rgba="0.79 0.82 0.93 1"/>
+            <geom type="mesh" mesh="base_link" class="collision"/>
+
+            <body name="RThighP" pos="0.017714 0 0" quat="0.739176 0.673512 0 0">
+                <inertial pos="0.0296 -0.0145 -0.0121" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+                <joint name="RHipP" axis="-1 0 0" range="-1 1"/>
+                <geom type="mesh" mesh="RThighP" class="visual" rgba="0.79 0.82 0.93 1"/>
+                <geom type="mesh" mesh="RThighP" class="collision"/>
+                
+                <body name="RThighY" pos="0.047436 0.01 -0.00611">
+                    <inertial pos="-0.0027 -0.0433 -0.0122" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+                    <joint name="RHipY" axis="0 -0.15469 -0.987963" range="-0.5 0.5"/>
+                    <geom type="mesh" mesh="RThighY" class="visual" rgba="0.79 0.82 0.93 1"/>
+                    <geom type="mesh" mesh="RThighY" class="collision"/>
+                    
+                    <body name="RThighR" pos="-0.0052192 -0.059002 0.0025558" quat="0.999355 0.0359053 0 0">
+                        <inertial pos="-0.0001 -0.0633 -0.0045" mass="0.8" diaginertia="0.002 0.002 0.002"/>
+                        <joint name="RHipR" axis="0 -1 0" range="-0.5 0.5"/>
+                        <geom type="mesh" mesh="RThighR" class="visual" rgba="0.79 0.82 0.93 1"/>
+                        <geom type="mesh" mesh="RThighR" class="collision"/>
+                        
+                        <body name="RShankP" pos="0 -0.09088 0" quat="0.999466 -0.0326887 0 0">
+                            <inertial pos="0.0072 -0.0378 -0.0074" mass="0.6" diaginertia="0.002 0.002 0.002"/>
+                            <joint name="RKneeP" axis="1 0 0" range="-2 0.2"/>
+                            <geom type="mesh" mesh="RShankP" class="visual" rgba="0.79 0.82 0.93 1"/>
+                            <geom type="mesh" mesh="RShankP" class="collision"/>
+                            
+                            <body name="RFootP" pos="0 -0.14 0" quat="0.999066 0.0432011 0 0">
+                                <inertial pos="0 0 0" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+                                <joint name="RAankleP" axis="-1 0 0" range="-0.5 0.5"/>
+                                <geom type="mesh" mesh="RFootP" class="visual" rgba="0.65 0.62 0.59 1"/>
+                                <!-- Restore collision -->
+                                <geom type="mesh" mesh="RFootP" class="collision"/>
+                                
+                                <body name="RFootR">
+                                    <inertial pos="0 -0.0174 -0.0244" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+                                    <joint name="RAnkleR" axis="0 0 1" range="-0.3 0.3"/>
+                                    <geom type="mesh" mesh="RFootR" class="visual" rgba="0.79 0.82 0.93 1"/>
+                                    <!-- Restore collision -->
+                                    <geom type="mesh" mesh="RFootR" class="collision"/>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+
+            <body name="LThighP" pos="-0.022372 0 0" quat="0.713335 0.700822 0.000456284 -0.0012193">
+                <inertial pos="-0.0268 -0.0161 -0.0116" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+                <joint name="LHipP" axis="1 0 0" range="-1 1"/>
+                <geom type="mesh" mesh="LThighP" class="visual" rgba="0.79 0.82 0.93 1"/>
+                <geom type="mesh" mesh="LThighP" class="collision"/>
+                
+                <body name="LThighY" pos="-0.032075 5.5879e-05 -6.6114e-05">
+                    <inertial pos="-0.0085 -0.0345 -0.0158" mass="0.5" diaginertia="0.001 0.001 0.001"/>
+                    <joint name="LHipY" axis="0 -0.225191 -0.974315" range="-0.5 0.5"/>
+                    <geom type="mesh" mesh="LThighY" class="visual" rgba="0.79 0.82 0.93 1"/>
+                    <geom type="mesh" mesh="LThighY" class="collision"/>
+                    
+                    <body name="LThighR" pos="-0.006 -0.04904 0">
+                        <inertial pos="-0.003 -0.0627 -0.0046" mass="0.8" diaginertia="0.002 0.002 0.002"/>
+                        <joint name="LHipR" axis="0 -1 0" range="-0.5 0.5"/>
+                        <geom type="mesh" mesh="LThighR" class="visual" rgba="0.79 0.82 0.93 1"/>
+                        <geom type="mesh" mesh="LThighR" class="collision"/>
+                        
+                        <body name="LShankP" pos="0 -0.09088 -1e-05" quat="0.999287 -0.0377545 0 0">
+                            <inertial pos="-0.011 -0.0393 -0.0077" mass="0.6" diaginertia="0.002 0.002 0.002"/>
+                            <joint name="LKneeP" axis="1 0 0" range="-2 0.5"/>
+                            <geom type="mesh" mesh="LShankP" class="visual" rgba="0.79 0.82 0.93 1"/>
+                            <geom type="mesh" mesh="LShankP" class="collision"/>
+                            
+                            <body name="LFootP" pos="0 -0.14 0" quat="0.998914 0.0465881 0 0">
+                                <inertial pos="-0.0035 0 0" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+                                <joint name="LAnkleP" axis="-1 0 0" range="-0.5 0.5"/>
+                                <geom type="mesh" mesh="LFootP" class="visual" rgba="0.65 0.62 0.59 1"/>
+                                <!-- Restore collision -->
+                                <geom type="mesh" mesh="LFootP" class="collision"/>
+                                
+                                <body name="LFootR" pos="-0.0035 0 0">
+                                    <inertial pos="0 -0.0174 -0.0244" mass="0.4" diaginertia="0.001 0.001 0.001"/>
+                                    <joint name="LAnkleR" axis="0 0 1" range="-0.3 0.3"/>
+                                    <geom type="mesh" mesh="LFootR" class="visual" rgba="0.79 0.82 0.93 1"/>
+                                    <!-- Restore collision -->
+                                    <geom type="mesh" mesh="LFootR" class="collision"/>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+
+    <contact>
+        <exclude body1="RShankP" body2="RFootR"/>
+        <exclude body1="LShankP" body2="LFootR"/>
+    </contact>
+
+    <actuator>
+        <motor name="RHipP" joint="RHipP" gear="1" forcerange="-150 150"/>
+        <motor name="RHipY" joint="RHipY" gear="1" forcerange="-150 150"/>
+        <motor name="RHipR" joint="RHipR" gear="1" forcerange="-150 150"/>
+        <motor name="RKneeP" joint="RKneeP" gear="1" forcerange="-150 150"/>
+        <motor name="LHipP" joint="LHipP" gear="1" forcerange="-150 150"/>
+        <motor name="LHipY" joint="LHipY" gear="1" forcerange="-150 150"/>
+        <motor name="LHipR" joint="LHipR" gear="1" forcerange="-150 150"/>
+        <motor name="LKneeP" joint="LKneeP" gear="1" forcerange="-150 150"/>
+
+        <motor name="RAankleP" joint="RAankleP" gear="1" forcerange="-50 50"/>
+        <motor name="RAnkleR" joint="RAnkleR" gear="1" forcerange="-50 50"/>
+        <motor name="LAnkleP" joint="LAnkleP" gear="1" forcerange="-50 50"/>
+        <motor name="LAnkleR" joint="LAnkleR" gear="1" forcerange="-50 50"/>
+    </actuator>
+    
+    <sensor>
+        <jointpos name="qpos_all" joint="RHipP"/>
+    </sensor>
+</mujoco>
