@@ -1,0 +1,37 @@
+<mujoco model="V4 Quadruped Scene">
+    <option timestep="0.005" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" impratio="10">
+        <!-- implicitfast积分器：更接近PhysX的隐式积分
+             cone=elliptic: 椭圆摩擦锥，更接近PhysX的摩擦模型
+             impratio=10: 提高接触约束的阻抗比 -->
+        <flag warmstart="enable"/>
+    </option>
+    <size nconmax="200"/>
+    <statistic center="0 0 0.3" extent="1.5"/>
+
+    <visual>
+        <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
+        <rgba haze="0.15 0.25 0.35 1"/>
+        <global azimuth="120" elevation="-20"/>
+    </visual>
+
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="309"/>
+        <texture name="plane" type="2d" builtin="checker" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" width="512" height="512" mark="cross" markrgb="0.8 0.8 0.8"/>
+        <material name="plane" texture="plane" texrepeat="5 5" reflectance="0.2"/>
+    </asset>
+
+    <worldbody>
+        <light pos="0 0 10" dir="0 0 -1" directional="true"/>
+        
+        <!-- contype=2, conaffinity=1: 与机器人碰撞体(contype=1,conaffinity=2)碰撞 -->
+        <!-- friction: IsaacLab地面 static=1.0, dynamic=1.0
+             MuJoCo friction=(sliding, torsional, rolling)
+             solref: 过阻尼接触 (0.004=短时间常数, 2.0=过阻尼比，消除反弹)
+             solimp: 高阻抗 (0.9,0.95,0.001) 减少穿透 -->
+        <geom name="floor" size="0 0 0.05" type="plane" material="plane" condim="4" friction="1.5 0.5 0.01"
+              contype="2" conaffinity="1"
+              solref="0.004 2" solimp="0.9 0.95 0.001"/>
+    </worldbody>
+
+    <include file="v4_robot.xml"/>
+</mujoco>

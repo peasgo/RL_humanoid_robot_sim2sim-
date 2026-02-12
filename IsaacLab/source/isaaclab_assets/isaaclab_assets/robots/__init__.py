@@ -26,3 +26,4 @@ from .spot import *
 from .unitree import *
 from .universal_robots import *
 from .v3_humanoid import *
+from .v4_quadruped import *

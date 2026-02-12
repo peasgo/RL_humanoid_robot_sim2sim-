@@ -1,0 +1,41 @@
+<mujoco model="V4 Quadruped Scene">
+    <!-- 匹配IsaacLab PhysX训练环境:
+         dt=0.005, gravity=-9.81, solver_type=TGS
+         integrator=implicitfast 对应PhysX的TGS求解器
+         cone=elliptic (默认), impratio=1 (默认) -->
+    <option timestep="0.005" gravity="0 0 -9.81" integrator="implicitfast">
+        <flag warmstart="enable"/>
+    </option>
+    <size nconmax="200"/>
+    <statistic center="0 0 0.3" extent="1.5"/>
+
+    <visual>
+        <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
+        <rgba haze="0.15 0.25 0.35 1"/>
+        <global azimuth="120" elevation="-20"/>
+    </visual>
+
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="309"/>
+        <texture name="plane" type="2d" builtin="checker" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" width="512" height="512" mark="cross" markrgb="0.8 0.8 0.8"/>
+        <material name="plane" texture="plane" texrepeat="5 5" reflectance="0.2"/>
+    </asset>
+
+    <worldbody>
+        <light pos="0 0 10" dir="0 0 -1" directional="true"/>
+
+        <!-- IsaacLab地面: static_friction=1.0, dynamic_friction=1.0, restitution=0.0
+             机器人: static_friction=0.8, dynamic_friction=0.6
+             friction_combine_mode=multiply → 有效摩擦力=0.8
+             MuJoCo friction=min(geom1,geom2), 所以地面设0.8即可匹配
+             condim=4: 滑动+扭转摩擦
+             solref="0.004 1": 短时间常数+临界阻尼，匹配PhysX无弹跳
+             solimp="0.9 0.95 0.001": 高阻抗减少穿透 -->
+        <geom name="floor" size="0 0 0.05" type="plane" material="plane" condim="4"
+              friction="1.5 0.4 0.01"
+              contype="2" conaffinity="1"
+              solref="0.004 1" solimp="0.9 0.95 0.001"/>
+    </worldbody>
+
+    <include file="v4_robot.xml"/>
+</mujoco>
