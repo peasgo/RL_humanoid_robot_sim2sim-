@@ -16,3 +16,4 @@ trajectory_recording.h5
 
 # ignore big data by default
 **/*.zip
+.vscode/*.db

@@ -1,6 +1,4 @@
-# V4 Quadruped Robot - Sim2Sim MuJoCo Configuration (v4b)
-# Policy: 2026-02-11_12-17-13, obs=62, actions=16 (excluding Waist_2)
-# 基于 mujoco_deploy_v4 的验证参数
+
 
 policy_path: "/home/rl/RL-human_robot/IsaacLab/logs/rsl_rl/v4_quadruped_flat/2026-02-11_12-17-13/exported/policy.pt"
 xml_path: "v4_scene.xml"
@@ -9,11 +7,7 @@ simulation_duration: 1000.0
 simulation_dt: 0.005
 control_decimation: 4
 
-# PD gains in MuJoCo joint order (17 joints)
-# MuJoCo顺序: Waist_2, RSDp, RSDy, RARMp, RARMAP,
-#              LSDp, LSDy, LARMp, LARMAp,
-#              RHIPp, RHIPy, RKNEEP, RANKLEp,
-#              LHIPp, LHIPy, LKNEEp, LANKLEp
+
 kps: [1000,
       150, 150, 150, 150,
       150, 150, 150, 150,
@@ -26,7 +20,7 @@ kds: [100,
       15, 15, 15, 12,
       15, 15, 15, 12]
 
-# Default angles in MuJoCo joint order (17 joints)
+
 default_angles: [3.14159,
                  0.7854, 0.0, -1.5708, 0.7854,
                  0.7854, 0.0, 1.5708, 0.7854,
@@ -40,26 +34,22 @@ dof_vel_scale: 1.0
 action_scale: 0.25
 
 use_tanh_action: false
-action_clip: 5.0  # 限制极端动作输出（正常动作范围在±2以内）
+action_clip: 5.0
 
-# Action low-pass filter: smoothed = alpha * old + (1-alpha) * new
-# 消融测试表明af=0.3配合raw last_action效果最佳（FWD-BWD差=+0.53m，BWD=+0.10m）
-# 关键：obs中的last_action必须用raw policy output，不是filtered值
+
 action_filter_alpha: 0.3
 
-# Observation low-pass filter
-# 消融测试表明去掉obs_filter效果更好（训练时无filter）
+
 obs_filter_alpha: 0.0
 obs_filter_mode: "vel_only"
 
-# Action ramp-up: 消融测试表明去掉ramp效果更好（训练时无ramp）
-# 注意：去掉ramp后初始冲击由较高的init_height(0.26)补偿
+
 action_ramp_steps: 0
 
-# 初始高度：0.26m避免初始地面穿透（默认0.22m有2cm穿透）
+
 init_height: 0.26
 
-# 不使用质量缩放，保持原始重量
+
 mass_scale: 1.0
 
 dq_sign_fixes: null

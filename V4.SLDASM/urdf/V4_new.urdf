@@ -1,0 +1,1555 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="V4.SLDASM">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.000500910908733876 -0.00998629103930559 0.0173218447986229"
+        rpy="0 0 0" />
+      <mass
+          value="0.87412" />
+      <inertia
+        ixx="5.159666849989006E-05"
+        ixy="7.707696413000354E-09"
+        ixz="-5.872919228895123E-08"
+        iyy="1.895811655166254E-04"
+        iyz="-4.515101910073938E-06"
+        izz="1.824682091780785E-04" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Waist">
+    <inertial>
+      <origin
+        xyz="-8.30608238439057E-11 0.0324696863156453 0.00531795471648416"
+        rpy="0 0 0" />
+      <mass
+          value="0.03978" />
+      <inertia
+        ixx="2.512788651974752E-05"
+        ixy="-1.072897478376020E-13"
+        ixz="-4.649917418811534E-14"
+        iyy="1.534487615701661E-05"
+        iyz="3.857880690864593E-07"
+        izz="1.409193503499621E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/Waist.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/Waist.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Waist"
+    type="fixed">
+    <origin
+      xyz="0.00275 0 0.04211"
+      rpy="1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="Waist" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="-0.52"
+      upper="0.52"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Waist_2">
+    <inertial>
+      <origin
+        xyz="0.000488921628191946 0.158904911204199 -0.00145233666018986"
+        rpy="0 0 0" />
+      <mass
+          value="1.72647" />
+      <inertia
+        ixx="1.568192241586454E-03"
+        ixy="3.363631202570022E-06"
+        ixz="6.634255156123121E-05"
+        iyy="2.126284437606158E-03"
+        iyz="2.894392284311267E-05"
+        izz="2.968014126287041E-03" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/Waist_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/Waist_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Waist_2"
+    type="revolute">
+    <origin
+      xyz="0 0.021605 0.00067"
+      rpy="-3.1416 0 3.1386" />
+    <parent
+      link="Waist" />
+    <child
+      link="Waist_2" />
+    <axis
+      xyz="-0.0029703 -1 0" />
+    <limit
+      lower="-6.28"
+      upper="6.28"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RSDp">
+    <inertial>
+      <origin
+        xyz="0.029365339777939 -0.0145376874428952 -0.0120536310806074"
+        rpy="0 0 0" />
+      <mass
+          value="0.06956" />
+      <inertia
+        ixx="6.309974422693128E-06"
+        ixy="1.256672655632186E-07"
+        ixz="9.649085098030159E-07"
+        iyy="6.838746497117040E-06"
+        iyz="-3.025698958269654E-07"
+        izz="2.155396049657911E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RSDp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RSDp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RSDp"
+    type="revolute">
+    <origin
+      xyz="-0.081055 0.13392 0.003366"
+      rpy="3.0698 -0.053568 3.1386" />
+    <parent
+      link="Waist_2" />
+    <child
+      link="RSDp" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RSDy">
+    <inertial>
+      <origin
+        xyz="-0.00268951566935521 -0.0432907123235495 -0.0121725877314745"
+        rpy="0 0 0" />
+      <mass
+          value="0.02077" />
+      <inertia
+        ixx="1.941941224804317E-06"
+        ixy="2.469730820941369E-07"
+        ixz="1.077267067453340E-07"
+        iyy="1.334454545766935E-06"
+        iyz="5.314767381169253E-07"
+        izz="1.078444980271936E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RSDy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RSDy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RSDy"
+    type="revolute">
+    <origin
+      xyz="0.047234 0.01 -0.00611"
+      rpy="0 0 0" />
+    <parent
+      link="RSDp" />
+    <child
+      link="RSDy" />
+    <axis
+      xyz="0 0.071764 -0.99742" />
+    <limit
+      lower="-1.39"
+      upper="0.14"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RSDr">
+    <inertial>
+      <origin
+        xyz="-0.000648993351435478 -0.0644490658095404 -0.00501037463776728"
+        rpy="0 0 0" />
+      <mass
+          value="0.56537" />
+      <inertia
+        ixx="1.375091911937724E-05"
+        ixy="1.258608580818547E-08"
+        ixz="-4.969512472993263E-07"
+        iyy="1.014564978958515E-05"
+        iyz="4.797328155454492E-07"
+        izz="1.383605995529285E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RSDr.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RSDr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RSDr"
+    type="fixed">
+    <origin
+      xyz="-0.0052192 -0.057271 0.0026804"
+      rpy="3.0635 0.002804 -3.1059" />
+    <parent
+      link="RSDy" />
+    <child
+      link="RSDr" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="-0.22"
+      upper="1.47"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RARMp">
+    <inertial>
+      <origin
+        xyz="-0.0109855620136424 -0.0393014331349118 -0.00773020942152065"
+        rpy="0 0 0" />
+      <mass
+          value="0.36176" />
+      <inertia
+        ixx="1.537860504227884E-05"
+        ixy="1.133449897770003E-07"
+        ixz="1.270647446157856E-07"
+        iyy="4.819609821100508E-06"
+        iyz="-2.755882691709469E-08"
+        izz="1.259372553652187E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RARMp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RARMp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RARMp"
+    type="revolute">
+    <origin
+      xyz="0.0033115 -0.092555 -0.00059797"
+      rpy="0.0063485 1.1667E-05 0.035763" />
+    <parent
+      link="RSDr" />
+    <child
+      link="RARMp" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-2.26"
+      upper="0.29"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RARMAP">
+    <inertial>
+      <origin
+        xyz="-1.68452360393978E-09 1.782521449889E-09 1.87540552878951E-09"
+        rpy="0 0 0" />
+      <mass
+          value="0.00754" />
+      <inertia
+        ixx="9.075006940274496E-08"
+        ixy="-2.268045974064804E-20"
+        ixz="-2.387353127294066E-20"
+        iyy="9.075006940274731E-08"
+        iyz="2.517369524203851E-20"
+        izz="9.075006940274991E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RARMAP.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.776470588235294 0.756862745098039 0.737254901960784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RARMAP.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RARMAP"
+    type="revolute">
+    <origin
+      xyz="-0.0035 -0.14 0"
+      rpy="-3.1416 0.053568 3.1416" />
+    <parent
+      link="RARMp" />
+    <child
+      link="RARMAP" />
+    <axis
+      xyz="-0.99857 0 0.053543" />
+    <limit
+      lower="-0.06"
+      upper="1.04"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RARMAy">
+    <inertial>
+      <origin
+        xyz="-2.19445656091111E-10 -0.0174193425200825 0.0244034803681567"
+        rpy="0 0 0" />
+      <mass
+          value="0.06491" />
+      <inertia
+        ixx="1.325519805159369E-05"
+        ixy="4.390482271607711E-14"
+        ixz="2.134107868243090E-14"
+        iyy="1.586081491774733E-05"
+        iyz="7.202081996841813E-09"
+        izz="3.071306342259075E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RARMAy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RARMAy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RARMAy"
+    type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0.053568 0" />
+    <parent
+      link="RARMAP" />
+    <child
+      link="RARMAy" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.17"
+      upper="0.17"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LSDp">
+    <inertial>
+      <origin
+        xyz="-0.0264850638874403 -0.0161380599865885 -0.0115557024217441"
+        rpy="0 0 0" />
+      <mass
+          value="0.06956" />
+      <inertia
+        ixx="6.263676936262057E-06"
+        ixy="-1.944179238722477E-07"
+        ixz="-9.526157789979011E-07"
+        iyy="6.748613087668253E-06"
+        iyz="-6.347330273796997E-07"
+        izz="2.196876966379659E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LSDp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LSDp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LSDp"
+    type="revolute">
+    <origin
+      xyz="0.085975 0.13342 -0.0055901"
+      rpy="3.1415 -0.052511 3.141" />
+    <parent
+      link="Waist_2" />
+    <child
+      link="LSDp" />
+    <axis
+      xyz="1 0.0023807 -0.001057" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LSDy">
+    <inertial>
+      <origin
+        xyz="-0.00853936372152245 -0.0344797499848762 -0.0158346788164377"
+        rpy="0 0 0" />
+      <mass
+          value="0.02077" />
+      <inertia
+        ixx="1.941941224804280E-06"
+        ixy="-2.540671750457546E-07"
+        ixz="-8.972523162158922E-08"
+        iyy="1.409220952314551E-06"
+        iyz="5.076776461077229E-07"
+        izz="1.003678573724320E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LSDy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LSDy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LSDy"
+    type="revolute">
+    <origin
+      xyz="-0.031807 5.6518E-05 -6.6398E-05"
+      rpy="0 0 0" />
+    <parent
+      link="LSDp" />
+    <child
+      link="LSDy" />
+    <axis
+      xyz="-0.001057 0 -1" />
+    <limit
+      lower="-0.14"
+      upper="1.39"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LSDr">
+    <inertial>
+      <origin
+        xyz="-0.000141821718329591 -0.0647171132525845 -0.00916727769024185"
+        rpy="0 0 0" />
+      <mass
+          value="0.56537" />
+      <inertia
+        ixx="1.388219646352069E-05"
+        ixy="-1.175525939054032E-07"
+        ixz="4.715604816368129E-07"
+        iyy="1.017170606373004E-05"
+        iyz="2.522160491710641E-07"
+        izz="1.395667706000268E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LSDr.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LSDr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LSDr"
+    type="fixed">
+    <origin
+      xyz="-0.006 -0.047115 0"
+      rpy="3.0698 -0.001057 3.1416" />
+    <parent
+      link="LSDy" />
+    <child
+      link="LSDr" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="-1.47"
+      upper="0.22"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LARMp">
+    <inertial>
+      <origin
+        xyz="0.00720772208529306 -0.0378379502783512 -0.00744235818635386"
+        rpy="0 0 0" />
+      <mass
+          value="0.36176" />
+      <inertia
+        ixx="1.550853273737869E-05"
+        ixy="-1.141210516930819E-07"
+        ixz="-1.435795096307235E-07"
+        iyy="4.887130894365232E-06"
+        iyz="-2.719539504174527E-08"
+        izz="1.265992055503818E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LARMp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LARMp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LARMp"
+    type="revolute">
+    <origin
+      xyz="0 -0.092566 -0.00666"
+      rpy="0.071826 0 0" />
+    <parent
+      link="LSDr" />
+    <child
+      link="LARMp" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-0.29"
+      upper="2.26"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LARMAp">
+    <inertial>
+      <origin
+        xyz="1.782521449889E-09 1.78252097110532E-09 -1.78252150540015E-09"
+        rpy="0 0 0" />
+      <mass
+          value="0.00754" />
+      <inertia
+        ixx="9.075006940274757E-08"
+        ixy="2.397230645757361E-20"
+        ixz="-2.396683821405228E-20"
+        iyy="9.075006940274757E-08"
+        iyz="-2.396929796207745E-20"
+        izz="9.075006940274757E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LARMAp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.776470588235294 0.756862745098039 0.737254901960784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LARMAp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LARMAp"
+    type="revolute">
+    <origin
+      xyz="0 -0.14 0"
+      rpy="1.5708 0 -1.5708" />
+    <parent
+      link="LARMp" />
+    <child
+      link="LARMAp" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-0.06"
+      upper="1.04"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LARMAy">
+    <inertial>
+      <origin
+        xyz="2.13694381634433E-10 -0.0174193425571761 -0.024403480485095"
+        rpy="0 0 0" />
+      <mass
+          value="0.06491" />
+      <inertia
+        ixx="1.325519804633511E-05"
+        ixy="-4.315770653406980E-14"
+        ixz="2.121277110732250E-14"
+        iyy="1.586081491777924E-05"
+        iyz="-7.202082044606443E-09"
+        izz="3.071306335964880E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LARMAy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LARMAy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LARMAy"
+    type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="-1.5708 1.5708 0" />
+    <parent
+      link="LARMAp" />
+    <child
+      link="LARMAy" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.17"
+      upper="0.17"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RHIPp">
+    <inertial>
+      <origin
+        xyz="0.0295665493479005 -0.0145376874433172 -0.0120536310802667"
+        rpy="0 0 0" />
+      <mass
+          value="0.06956" />
+      <inertia
+        ixx="6.309974422708312E-06"
+        ixy="1.256672656283734E-07"
+        ixz="9.649085099734275E-07"
+        iyy="6.838746497079916E-06"
+        iyz="-3.025698958371248E-07"
+        izz="2.155396049660369E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RHIPp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RHIPp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHIPp"
+    type="revolute">
+    <origin
+      xyz="0.017714 0 0"
+      rpy="1.499 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="RHIPp" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RHIPy">
+    <inertial>
+      <origin
+        xyz="-0.00268951566935544 -0.0432907123235494 -0.0121725877314746"
+        rpy="0 0 0" />
+      <mass
+          value="0.02077" />
+      <inertia
+        ixx="1.941941224804312E-06"
+        ixy="2.469730820941325E-07"
+        ixz="1.077267067453358E-07"
+        iyy="1.334454545766927E-06"
+        iyz="5.314767381169201E-07"
+        izz="1.078444980271930E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RHIPy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RHIPy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHIPy"
+    type="revolute">
+    <origin
+      xyz="0.047436 0.01 -0.00611"
+      rpy="0 0 0" />
+    <parent
+      link="RHIPp" />
+    <child
+      link="RHIPy" />
+    <axis
+      xyz="0 0.071764 -0.99742" />
+    <limit
+      lower="-1.39"
+      upper="0.14"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RHIPr">
+    <inertial>
+      <origin
+        xyz="-0.000141821553682246 -0.0645546760091016 -0.00915559046551466"
+        rpy="0 0 0" />
+      <mass
+          value="0.56537" />
+      <inertia
+        ixx="1.388219641303363E-05"
+        ixy="-1.175526019260047E-07"
+        ixz="4.715604877211561E-07"
+        iyy="1.017170600829184E-05"
+        iyz="2.522160537596944E-07"
+        izz="1.395667700801318E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RHIPr.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RHIPr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHIPr"
+    type="fixed">
+    <origin
+      xyz="-0.0052192 -0.057244 0.0026823"
+      rpy="0 0 0" />
+    <parent
+      link="RHIPy" />
+    <child
+      link="RHIPr" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="-0.22"
+      upper="1.47"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RKNEEP">
+    <inertial>
+      <origin
+        xyz="0.00720772207709151 -0.0378379504038629 -0.00744235817106063"
+        rpy="0 0 0" />
+      <mass
+          value="0.36176" />
+      <inertia
+        ixx="1.550853273828639E-05"
+        ixy="-1.141210514340968E-07"
+        ixz="-1.435795103642551E-07"
+        iyy="4.887130894814710E-06"
+        iyz="-2.719539559648860E-08"
+        izz="1.265992056066456E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RKNEEP.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RKNEEP.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RKNEEP"
+    type="revolute">
+    <origin
+      xyz="0 -0.092403 -0.0066483"
+      rpy="0.069755 0 0" />
+    <parent
+      link="RHIPr" />
+    <child
+      link="RKNEEP" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-0.29"
+      upper="2.26"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RANKLEp">
+    <inertial>
+      <origin
+        xyz="-1.78252151927794E-09 -1.78252151927794E-09 1.78252145872524E-09"
+        rpy="0 0 0" />
+      <mass
+          value="0.00754" />
+      <inertia
+        ixx="9.075006940274731E-08"
+        ixy="2.411080599438606E-20"
+        ixz="-2.401389229531277E-20"
+        iyy="9.075006940274757E-08"
+        iyz="-2.392009984028266E-20"
+        izz="9.075006940274757E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RANKLEp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.776470588235294 0.756862745098039 0.737254901960784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RANKLEp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RANKLEp"
+    type="revolute">
+    <origin
+      xyz="0 -0.14 0"
+      rpy="0 0 0" />
+    <parent
+      link="RKNEEP" />
+    <child
+      link="RANKLEp" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.04"
+      upper="0.06"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="RANKLEy">
+    <inertial>
+      <origin
+        xyz="5.10645788848185E-09 -0.0174193425512699 -0.0244034804778275"
+        rpy="0 0 0" />
+      <mass
+          value="0.06491" />
+      <inertia
+        ixx="1.325519804720476E-05"
+        ixy="-4.138046678673800E-14"
+        ixz="2.062311105161142E-12"
+        iyy="1.586081491770765E-05"
+        iyz="-7.202080340382768E-09"
+        izz="3.071306337297188E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RANKLEy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/RANKLEy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RANKLEy"
+    type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 -9.6776E-05" />
+    <parent
+      link="RANKLEp" />
+    <child
+      link="RANKLEy" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.17"
+      upper="0.17"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LHIPp">
+    <inertial>
+      <origin
+        xyz="-0.0267534699752652 -0.0161386989748455 -0.0115554187206658"
+        rpy="0 0 0" />
+      <mass
+          value="0.06956" />
+      <inertia
+        ixx="6.263676936284833E-06"
+        ixy="-1.944179238758254E-07"
+        ixz="-9.526157790075467E-07"
+        iyy="6.748613087682707E-06"
+        iyz="-6.347330273870206E-07"
+        izz="2.196876966378871E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LHIPp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LHIPp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHIPp"
+    type="revolute">
+    <origin
+      xyz="-0.022372 0 0"
+      rpy="1.5708 0.0023807 -0.001057" />
+    <parent
+      link="base_link" />
+    <child
+      link="LHIPp" />
+    <axis
+      xyz="1 0.0023807 -0.001057" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LHIPy">
+    <inertial>
+      <origin
+        xyz="-0.0085393637215224 -0.034479749984876 -0.0158346788164383"
+        rpy="0 0 0" />
+      <mass
+          value="0.02077" />
+      <inertia
+        ixx="1.941941224804286E-06"
+        ixy="-2.540671750457546E-07"
+        ixz="-8.972523162159050E-08"
+        iyy="1.409220952314551E-06"
+        iyz="5.076776461077256E-07"
+        izz="1.003678573724325E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LHIPy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LHIPy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHIPy"
+    type="revolute">
+    <origin
+      xyz="-0.032075 5.5879E-05 -6.6114E-05"
+      rpy="0 0 0" />
+    <parent
+      link="LHIPp" />
+    <child
+      link="LHIPy" />
+    <axis
+      xyz="-0.001057 0 -1" />
+    <limit
+      lower="-0.14"
+      upper="1.39"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LHIPr">
+    <inertial>
+      <origin
+        xyz="-0.000643093596794701 -0.0646139643461603 -0.00501142221648341"
+        rpy="0 0 0" />
+      <mass
+          value="0.56537" />
+      <inertia
+        ixx="1.375091908553195E-05"
+        ixy="1.258609049096785E-08"
+        ixz="-4.969512445037464E-07"
+        iyy="1.014564976092544E-05"
+        iyz="4.797328155168494E-07"
+        izz="1.383605992604829E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LHIPr.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LHIPr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHIPr"
+    type="fixed">
+    <origin
+      xyz="-0.006 -0.04714 0"
+      rpy="-0.0063818 0.00081765 -0.035763" />
+    <parent
+      link="LHIPy" />
+    <child
+      link="LHIPr" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="-1.47"
+      upper="0.22"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LKNEEp">
+    <inertial>
+      <origin
+        xyz="-0.0109855620258126 -0.0393014331736789 -0.00773020940982851"
+        rpy="0 0 0" />
+      <mass
+          value="0.36176" />
+      <inertia
+        ixx="1.537860504034100E-05"
+        ixy="1.133449864034924E-07"
+        ixz="1.270647444254254E-07"
+        iyy="4.819609819740649E-06"
+        iyz="-2.755882948970365E-08"
+        izz="1.259372553663152E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LKNEEp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LKNEEp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LKNEEp"
+    type="revolute">
+    <origin
+      xyz="0.0033174 -0.09272 -0.00059902"
+      rpy="0.020071 1.1667E-05 0.035763" />
+    <parent
+      link="LHIPr" />
+    <child
+      link="LKNEEp" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-2.26"
+      upper="0.29"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LANKLEp">
+    <inertial>
+      <origin
+        xyz="-0.00350000178252131 -1.78252146376678E-09 1.78252139741361E-09"
+        rpy="0 0 0" />
+      <mass
+          value="0.00754" />
+      <inertia
+        ixx="9.075006940274782E-08"
+        ixy="2.398356219238222E-20"
+        ixz="-2.393954946953101E-20"
+        iyy="9.075006940274757E-08"
+        iyz="-2.405980362273355E-20"
+        izz="9.075006940274757E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LANKLEp.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.776470588235294 0.756862745098039 0.737254901960784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LANKLEp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LANKLEp"
+    type="revolute">
+    <origin
+      xyz="0 -0.14 0"
+      rpy="0.0029502 0 0" />
+    <parent
+      link="LKNEEp" />
+    <child
+      link="LANKLEp" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.04"
+      upper="0.06"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LANKLEy">
+    <inertial>
+      <origin
+        xyz="-0.00349943343558675 -0.0174823136885467 -0.0244034793992341"
+        rpy="0 0 0" />
+      <mass
+          value="0.06491" />
+      <inertia
+        ixx="1.325519846825837E-05"
+        ixy="-5.831497800412983E-15"
+        ixz="2.876726020380877E-14"
+        iyy="1.586081485116145E-05"
+        iyz="-7.202119158483279E-09"
+        izz="3.071306854253275E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LANKLEy.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://V4.SLDASM/meshes/LANKLEy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LANKLEy"
+    type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 -0.017993" />
+    <parent
+      link="LANKLEp" />
+    <child
+      link="LANKLEy" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.17"
+      upper="0.17"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>

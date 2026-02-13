@@ -32,7 +32,7 @@ def main():
     # 直接内联配置，避免导入问题
     robot_cfg = ArticulationCfg(
         spawn=sim_utils.UsdFileCfg(
-            usd_path="/home/rl/RL-human_robot/V4.SLDASM/urdf/V4.SLDASM.usd",
+            usd_path="/home/rl/RL-human_robot/V4.SLDASM/urdf/V4_new.usd",
             activate_contact_sensors=True,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=False,

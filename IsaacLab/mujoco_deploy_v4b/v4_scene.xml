@@ -1,8 +1,5 @@
 <mujoco model="V4 Quadruped Scene">
-    <!-- 匹配IsaacLab PhysX训练环境:
-         dt=0.005, gravity=-9.81, solver_type=TGS
-         integrator=implicitfast 对应PhysX的TGS求解器
-         cone=elliptic (默认), impratio=1 (默认) -->
+
     <option timestep="0.005" gravity="0 0 -9.81" integrator="implicitfast">
         <flag warmstart="enable"/>
     </option>
@@ -24,13 +21,7 @@
     <worldbody>
         <light pos="0 0 10" dir="0 0 -1" directional="true"/>
 
-        <!-- IsaacLab地面: static_friction=1.0, dynamic_friction=1.0, restitution=0.0
-             机器人: static_friction=0.8, dynamic_friction=0.6
-             friction_combine_mode=multiply → 有效摩擦力=0.8
-             MuJoCo friction=min(geom1,geom2), 所以地面设0.8即可匹配
-             condim=4: 滑动+扭转摩擦
-             solref="0.004 1": 短时间常数+临界阻尼，匹配PhysX无弹跳
-             solimp="0.9 0.95 0.001": 高阻抗减少穿透 -->
+
         <geom name="floor" size="0 0 0.05" type="plane" material="plane" condim="4"
               friction="1.5 0.4 0.01"
               contype="2" conaffinity="1"
