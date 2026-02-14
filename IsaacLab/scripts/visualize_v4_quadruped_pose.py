@@ -36,25 +36,23 @@ from isaaclab.sim import SimulationContext
 from isaaclab_assets.robots.v4_quadruped import V4_QUADRUPED_CFG
 
 
-# 四足初始关节角度（从图片中的URDF可视化工具读取）
+# 四足初始关节角度（DOG_V5，无踝关节）
 QUADRUPED_JOINT_ANGLES = {
-    "Waist_2": math.radians(180),    # 上半身完全前倾
-    "RSDp": math.radians(45),        # 右肩俯仰
-    "RSDy": math.radians(0),         # 右肩偏航
-    "RARMp": math.radians(-90),      # 右肘俯仰
-    "RARMAP": math.radians(45),      # 右前臂
-    "LSDp": math.radians(45),        # 左肩俯仰
-    "LSDy": math.radians(0),         # 左肩偏航
-    "LARMp": math.radians(90),       # 左肘俯仰
-    "LARMAp": math.radians(45),      # 左前臂
-    "RHIPp": math.radians(45),       # 右髋俯仰
-    "RHIPy": math.radians(0),        # 右髋偏航
-    "RKNEEP": math.radians(90),      # 右膝
-    "RANKLEp": math.radians(-45),    # 右踝
-    "LHIPp": math.radians(-45),      # 左髋俯仰
-    "LHIPy": math.radians(0),        # 左髋偏航
-    "LKNEEp": math.radians(-90),     # 左膝
-    "LANKLEp": math.radians(-45),    # 左踝
+    "Waist_2": 3.14159,  # 上半身完全前倾 ≈π
+            # 前腿（手臂）
+    "RSDp": 0.6,
+    "RSDy": 0.0,
+    "RARMp": -1.4,
+    "LSDp": 0.6,
+    "LSDy": 0.0,
+    "LARMp": 1.4,
+            # 后腿
+    "RHIPp": 0.78,
+    "RHIPy": 0.0,
+    "RKNEEP": 1.0,
+    "LHIPp": -0.78,
+    "LHIPy": 0.0,
+    "LKNEEp": -1.0,              # 左膝 ~-57°
 }
 
 
@@ -179,16 +177,16 @@ def main():
     print("\n" + "=" * 60)
     print("末端效应器位置（四足接地点）:")
     print("=" * 60)
-    end_effectors = ["RARMAy", "LARMAy", "RANKLEy", "LANKLEy"]
+    end_effectors = ["R_ARM_feet", "L_arm_feet", "R_Feet", "L_Feet"]
     for name in end_effectors:
         if name in body_names:
             idx = body_names.index(name)
             pos = body_pos[idx].cpu().numpy()
             label = {
-                "RARMAy": "前右腿（右手）",
-                "LARMAy": "前左腿（左手）",
-                "RANKLEy": "后右腿（右脚）",
-                "LANKLEy": "后左腿（左脚）",
+                "R_ARM_feet": "前右腿（右手）",
+                "L_arm_feet": "前左腿（左手）",
+                "R_Feet": "后右腿（右脚）",
+                "L_Feet": "后左腿（左脚）",
             }.get(name, name)
             print(f"  {label}: ({pos[0]:.4f}, {pos[1]:.4f}, {pos[2]:.4f}) m")
 

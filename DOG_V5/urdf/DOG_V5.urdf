@@ -1,0 +1,659 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="DOG_V5">
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.000500910908733885 -0.00998629103930559 0.0173218447986229" rpy="0 0 0" />
+      <mass value="0.7503764183" />
+      <inertia ixx="0.000109156823" ixy="0.000000016306" ixz="-0.000000124246" iyy="0.000401073913" iyz="-0.000009552054" izz="0.000386025893" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="Waist">
+    <inertial>
+      <origin xyz="-8.30612614279025E-11 0.0324696863156454 0.026927954716485" rpy="0 0 0" />
+      <mass value="0.0841609904" />
+      <inertia ixx="0.000053160026" ixy="-0.000000000000" ixz="-0.000000000000" iyy="0.000032463296" iyz="0.000000816165" izz="0.000029812600" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/Waist.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/Waist.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Waist" type="fixed">
+    <origin xyz="0.00275 0.0216100000000009 0.042110000000001" rpy="1.5707963267949 0 0" />
+    <parent link="base_link" />
+    <child link="Waist" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+  <link name="Waist_2">
+    <inertial>
+      <origin xyz="0.00276499606018901 0.196357417693751 0.0254713742454946" rpy="0 0 0" />
+      <mass value="2.2727006871" />
+      <inertia ixx="0.003317634416" ixy="0.000007116027" ixz="0.000140352902" iyy="0.004498322490" iyz="0.000061233152" izz="0.006279068058" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/Waist_2.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/Waist_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Waist_2" type="revolute">
+    <origin xyz="0.00216481992181911 -0.0158539697768376 0.0492037109056859" rpy="3.14159265358979 0 3.13862236818707" />
+    <parent link="Waist" />
+    <child link="Waist_2" />
+    <axis xyz="-0.00297028103512353 -0.999995588705556 0" />
+    <limit lower="-6.3" upper="6.3" effort="0" velocity="0" />
+  </joint>
+  <link name="RSDp">
+    <inertial>
+      <origin xyz="-0.0178691059729414 -0.0245376874428963 -0.00594363108061242" rpy="0 0 0" />
+      <mass value="0.0478541446" />
+      <inertia ixx="0.000013349249" ixy="0.000000265859" ixz="0.000002041340" iyy="0.000014467908" iyz="-0.000000640110" izz="0.000004559910" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RSDp.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RSDp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RSDp" type="revolute">
+    <origin xyz="-0.12555 0.18104 0.039621" rpy="3.0698 -0.053568 3.1386" />
+    <parent link="Waist_2" />
+    <child link="RSDp" />
+    <axis xyz="1 0 0" />
+    <limit lower="-1.57" upper="1.57" effort="0" velocity="0" />
+  </joint>
+  <link name="RSDy">
+    <inertial>
+      <origin xyz="-0.00268951566935449 -0.0432907123235488 -0.0121725877314791" rpy="0 0 0" />
+      <mass value="0.0149512411" />
+      <inertia ixx="0.000004108330" ixy="0.000000522491" ixz="0.000000227904" iyy="0.000002823144" iyz="0.000001124381" izz="0.000002281535" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RSDy.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RSDy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RSDy" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="RSDp" />
+    <child link="RSDy" />
+    <axis xyz="0 0.0717637669963117 -0.9974216569468" />
+    <limit lower="-1.4" upper="0.14" effort="0" velocity="0" />
+  </joint>
+  <link name="RSDr">
+    <inertial>
+      <origin xyz="-0.00493739086646305 -0.111722458902205 -0.00531068604375631" rpy="0 0 0" />
+      <mass value="0.3104401995" />
+      <inertia ixx="0.000029091154" ixy="0.000000026627" ixz="-0.000001051340" iyy="0.000021463923" iyz="0.000001014913" izz="0.000029271276" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RSDr.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RSDr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RSDr" type="fixed">
+    <origin xyz="-0.011195126175888 -0.0103012166890561 0.00605836786939832" rpy="3.06346884034212 0.00280395002746881 -3.10593935078835" />
+    <parent link="RSDy" />
+    <child link="RSDr" />
+    <axis xyz="0 0 0" />
+    <limit lower="-0.22" upper="1.47" effort="0" velocity="0" />
+  </joint>
+  <link name="RARMp">
+    <inertial>
+      <origin xyz="-0.0088087761774942 -0.0323182738264633 -0.00327862358260861" rpy="0 0 0" />
+      <mass value="0.1104855658" />
+      <inertia ixx="0.000043282597" ixy="0.000000240853" ixz="0.000000285299" iyy="0.000009926079" iyz="-0.000000199894" izz="0.000037340858" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RARMp.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RARMp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RARMp" type="revolute">
+    <origin xyz="-0.0044747 -0.13995 -0.00088824" rpy="0.0063485 1.1667E-05 0.035763" />
+    <parent link="RSDr" />
+    <child link="RARMp" />
+    <axis xyz="1 0 0" />
+    <limit lower="-2.3" upper="0.29" effort="0" velocity="0" />
+  </joint>
+  <link name="R_ARM_feet">
+    <inertial>
+      <origin xyz="6.10622663543836E-16 0.00608969684300448 -1.38864614251943E-15" rpy="0 0 0" />
+      <mass value="0.2347263648" />
+      <inertia ixx="0.000047580320" ixy="0.000000000000" ixz="-0.000000002486" iyy="0.000077925915" iyz="-0.000000000000" izz="0.000047590971" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/R_ARM_feet.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/R_ARM_feet.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="R_ARM_feet" type="fixed">
+    <origin xyz="0 -0.163500000000001 0" rpy="-3.14159265358978 0.0535682996607567 3.14159265358979" />
+    <parent link="RARMp" />
+    <child link="R_ARM_feet" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="LSDp">
+    <inertial>
+      <origin xyz="0.00532159384429746 -0.0161945776708646 -0.0114893043421563" rpy="0 0 0" />
+      <mass value="0.0454989236" />
+      <inertia ixx="0.000013251303" ixy="-0.000000411306" ixz="-0.000002015334" iyy="0.000014277223" iyz="-0.000001342828" izz="0.000004647667" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LSDp.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LSDp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LSDp" type="revolute">
+    <origin xyz="0.120017281372027 0.17091047709902 0.0197304821689989" rpy="3.14146501023636 -0.0525111635115858 3.14100632419705" />
+    <parent link="Waist_2" />
+    <child link="LSDp" />
+    <axis xyz="0.999996607597238 0.0023806690533142 -0.00105698101866499" />
+    <limit lower="-1.57" upper="1.57" effort="0" velocity="0" />
+  </joint>
+  <link name="LSDy">
+    <inertial>
+      <origin xyz="-0.00853936372151895 -0.0344797499848765 -0.0158346788164344" rpy="0 0 0" />
+      <mass value="0.0149512411" />
+      <inertia ixx="0.000004108330" ixy="-0.000000537499" ixz="-0.000000189821" iyy="0.000002981318" iyz="0.000001074032" izz="0.000002123361" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LSDy.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LSDy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LSDy" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="LSDp" />
+    <child link="LSDy" />
+    <axis xyz="-0.00105698401394276 0 -0.999999441392241" />
+    <limit lower="-0.14" upper="1.4" effort="0" velocity="0" />
+  </joint>
+  <link name="LSDr">
+    <inertial>
+      <origin xyz="-0.00536100188038316 -0.121799148416222 -0.00647332510099194" rpy="0 0 0" />
+      <mass value="0.3172327046" />
+      <inertia ixx="0.000029368882" ixy="-0.000000248692" ixz="0.000000997623" iyy="0.000021519047" iyz="0.000000533583" izz="0.000029526451" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LSDr.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LSDr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LSDr" type="fixed">
+    <origin xyz="-0.0112120072710671 0.00962607910176677 0.00678894132718556" rpy="3.06976714570974 -0.0010569842107272 3.14159265358979" />
+    <parent link="LSDy" />
+    <child link="LSDr" />
+    <axis xyz="0 0 0" />
+    <limit lower="-1.47" upper="0.22" effort="0" velocity="0" />
+  </joint>
+  <link name="LARMp">
+    <inertial>
+      <origin xyz="0.00842584017580023 -0.0309113757245012 -0.00312633175360194" rpy="0 0 0" />
+      <mass value="0.1155141990" />
+      <inertia ixx="0.000043554772" ixy="-0.000000240853" ixz="-0.000000285299" iyy="0.000010068871" iyz="-0.000000199905" izz="0.000037483651" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LARMp.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LARMp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LARMp" type="revolute">
+    <origin xyz="-0.00521918016205407 -0.149647716979841 -0.00396608128455212" rpy="0.0718255078798753 0 0" />
+    <parent link="LSDr" />
+    <child link="LARMp" />
+    <axis xyz="-1 0 0" />
+    <limit lower="-0.29" upper="2.3" effort="0" velocity="0" />
+  </joint>
+  <link name="L_arm_feet">
+    <inertial>
+      <origin xyz="-1.42323716700865E-09 0.00598436254162268 -5.17397921381835E-10" rpy="0 0 0" />
+      <mass value="0.2347263700" />
+      <inertia ixx="0.000047580321" ixy="0.000000000002" ixz="-0.000000002486" iyy="0.000077925918" iyz="0.000000000001" izz="0.000047590975" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/L_arm_feet.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/L_arm_feet.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="L_arm_feet" type="fixed">
+    <origin xyz="0 -0.16248014626754 0" rpy="3.14159265358876 0.0535681481493359 3.14159265357045" />
+    <parent link="LARMp" />
+    <child link="L_arm_feet" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="RHIPp">
+    <inertial>
+      <origin xyz="-0.0178691059718996 -0.0245376874433173 -0.00594363108026674" rpy="0 0 0" />
+      <mass value="0.0478541446" />
+      <inertia ixx="0.000013349249" ixy="0.000000265859" ixz="0.000002041340" iyy="0.000014467908" iyz="-0.000000640110" izz="0.000004559910" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RHIPp.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RHIPp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RHIPp" type="revolute">
+    <origin xyz="0.06515 0.0068119 0.0095357" rpy="1.499 0 0" />
+    <parent link="base_link" />
+    <child link="RHIPp" />
+    <axis xyz="-1 0 0" />
+    <limit lower="-1.57" upper="1.57" effort="0" velocity="0" />
+  </joint>
+  <link name="RHIPy">
+    <inertial>
+      <origin xyz="-0.00268951566935502 -0.043290712323549 -0.0121725877314747" rpy="0 0 0" />
+      <mass value="0.0149512411" />
+      <inertia ixx="0.000004108330" ixy="0.000000522491" ixz="0.000000227904" iyy="0.000002823144" iyz="0.000001124381" izz="0.000002281535" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RHIPy.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RHIPy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RHIPy" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="RHIPp" />
+    <child link="RHIPy" />
+    <axis xyz="0 0.0717637669963079 -0.9974216569468" />
+    <limit lower="-1.4" upper="0.14" effort="0" velocity="0" />
+  </joint>
+  <link name="RHIPr">
+    <inertial>
+      <origin xyz="-0.00536100171573586 -0.121799148254415 -0.00647332510683165" rpy="0 0 0" />
+      <mass value="0.3172327018" />
+      <inertia ixx="0.000029368882" ixy="-0.000000248692" ixz="0.000000997623" iyy="0.000021519047" iyz="0.000000533583" izz="0.000029526451" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RHIPr.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RHIPr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RHIPr" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="RHIPy" />
+    <child link="RHIPr" />
+    <axis xyz="0 0 0" />
+    <limit lower="-0.22" upper="1.47" effort="0" velocity="0" />
+  </joint>
+  <link name="RKNEEP">
+    <inertial>
+      <origin xyz="0.00842584018192904 -0.0309113757270743 -0.00312633174717844" rpy="0 0 0" />
+      <mass value="0.1155141989" />
+      <inertia ixx="0.000043554772" ixy="-0.000000240853" ixz="-0.000000285299" iyy="0.000010068871" iyz="-0.000000199904" izz="0.000037483651" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RKNEEP.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/RKNEEP.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="RKNEEP" type="revolute">
+    <origin xyz="-0.00521918016205324 -0.149647716979842 -0.00396608128453677" rpy="0.0718255078800422 0 0" />
+    <parent link="RHIPr" />
+    <child link="RKNEEP" />
+    <axis xyz="-1 0 0" />
+    <limit lower="-0.29" upper="2.3" effort="0" velocity="0" />
+  </joint>
+  <link name="R_Feet">
+    <inertial>
+      <origin xyz="1.38777878078145E-17 0.00608969684300475 -1.87245103320036E-16" rpy="0 0 0" />
+      <mass value="0.2347263648" />
+      <inertia ixx="0.000047580320" ixy="0.000000000000" ixz="-0.000000002486" iyy="0.000077925915" iyz="-0.000000000000" izz="0.000047590971" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/R_Feet.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/R_Feet.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="R_Feet" type="fixed">
+    <origin xyz="0 -0.163499999999974 0" rpy="0 0 0" />
+    <parent link="RKNEEP" />
+    <child link="R_Feet" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="LHIPp">
+    <inertial>
+      <origin xyz="0.00532159384425412 -0.0161945776708872 -0.0114893043421857" rpy="0 0 0" />
+      <mass value="0.0454989236" />
+      <inertia ixx="0.000013251303" ixy="-0.000000411306" ixz="-0.000002015334" iyy="0.000014277223" iyz="-0.000001342828" izz="0.000004647667" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LHIPp.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LHIPp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LHIPp" type="revolute">
+    <origin xyz="-0.0544467568318649 0.000100017171251501 0.000132238440490131" rpy="1.57079381045863 0.00238066997222974 -0.00105698720604042" />
+    <parent link="base_link" />
+    <child link="LHIPp" />
+    <axis xyz="0.999996607597238 0.00238066905331388 -0.00105698101866503" />
+    <limit lower="-1.57" upper="1.57" effort="0" velocity="0" />
+  </joint>
+  <link name="LHIPy">
+    <inertial>
+      <origin xyz="-0.0085393637215224 -0.0344797499848764 -0.0158346788164399" rpy="0 0 0" />
+      <mass value="0.0149512411" />
+      <inertia ixx="0.000004108330" ixy="-0.000000537499" ixz="-0.000000189821" iyy="0.000002981318" iyz="0.000001074032" izz="0.000002123361" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LHIPy.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LHIPy.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LHIPy" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="LHIPp" />
+    <child link="LHIPy" />
+    <axis xyz="-0.00105698401394272 0 -0.999999441392241" />
+    <limit lower="-0.14" upper="1.4" effort="0" velocity="0" />
+  </joint>
+  <link name="LHIPr">
+    <inertial>
+      <origin xyz="-0.00495378274361469 -0.11193695280084 -0.00531695785057294" rpy="0 0 0" />
+      <mass value="0.3104401984" />
+      <inertia ixx="0.000029091154" ixy="0.000000026627" ixz="-0.000001051340" iyy="0.000021463923" iyz="0.000001014913" izz="0.000029271276" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LHIPr.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LHIPr.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LHIPr" type="fixed">
+    <origin xyz="0 0 0" rpy="-0.00638182024801053 0.000817654768536252 -0.0357625594173663" />
+    <parent link="LHIPy" />
+    <child link="LHIPr" />
+    <axis xyz="0 0 0" />
+    <limit lower="-1.47" upper="0.22" effort="0" velocity="0" />
+  </joint>
+  <link name="LKNEEp">
+    <inertial>
+      <origin xyz="-0.00880877617723864 -0.0323182738276387 -0.00327862357903235" rpy="0 0 0" />
+      <mass value="0.1104855658" />
+      <inertia ixx="0.000043282597" ixy="0.000000240853" ixz="0.000000285299" iyy="0.000009926079" iyz="-0.000000199894" izz="0.000037340858" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LKNEEp.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/LKNEEp.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="LKNEEp" type="revolute">
+    <origin xyz="-0.00449107954162292 -0.140167766445759 -0.000894510536381785" rpy="0.00634850439173575 1.16674707094649E-05 0.0357633425271319" />
+    <parent link="LHIPr" />
+    <child link="LKNEEp" />
+    <axis xyz="1 0 0" />
+    <limit lower="-2.3" upper="0.29" effort="0" velocity="0" />
+  </joint>
+  <link name="L_Feet">
+    <inertial>
+      <origin xyz="-1.45130620021749E-09 -0.0092467002522717 -4.8312904551821E-10" rpy="0 0 0" />
+      <mass value="0.2347263700" />
+      <inertia ixx="0.000047580321" ixy="0.000000000002" ixz="-0.000000002486" iyy="0.000077925918" iyz="0.000000000001" izz="0.000047590975" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/L_Feet.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://DOG_V5/meshes/L_Feet.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="L_Feet" type="fixed">
+    <origin xyz="0 -0.16239451335137 0" rpy="0 0 0" />
+    <parent link="LKNEEp" />
+    <child link="L_Feet" />
+    <axis xyz="0 0 0" />
+  </joint>
+</robot>

@@ -5,7 +5,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 
 V4_QUADRUPED_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="/home/rl/RL-human_robot/V4.SLDASM/urdf/V4_new.usd",
+        usd_path="/home/rl/RL-human_robot/DOG_V5/urdf/DOG_V5.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -24,26 +24,24 @@ V4_QUADRUPED_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.23),
+        pos=(0.0, 0.0, 0.27),
         rot=(0.7071, 0.7071, 0.0, 0.0),
         joint_pos={
-            "Waist_2": 3.14159,
-            "RSDp": 0.5235987756,
+            "Waist_2": 3.14159,  # 上半身完全前倾 ≈π
+            # 前腿（手臂）
+            "RSDp": 0.6,
             "RSDy": 0.0,
-            "RARMp": -1.5708,
-            "RARMAP": 0.7854,
-            "LSDp": 0.7854,
+            "RARMp": -1.4,
+            "LSDp": 0.6,
             "LSDy": 0.0,
-            "LARMp": 1.5708,
-            "LARMAp": 0.7854,
-            "RHIPp": 0.7854,
+            "LARMp": 1.4,
+            # 后腿
+            "RHIPp": 0.78,
             "RHIPy": 0.0,
-            "RKNEEP": 1.5708,
-            "RANKLEp": -0.7854,
-            "LHIPp": -0.7854,
+            "RKNEEP": 1.0,
+            "LHIPp": -0.78,
             "LHIPy": 0.0,
-            "LKNEEp": -1.5708,
-            "LANKLEp": -0.7854,
+            "LKNEEp": -1.0,
         },
         joint_vel={".*": 0.0},
     ),
@@ -60,12 +58,6 @@ V4_QUADRUPED_CFG = ArticulationCfg(
             effort_limit_sim=150,
             stiffness=150,
             damping=15,
-        ),
-        "ankle": ImplicitActuatorCfg(
-            joint_names_expr=[".*ANKLE.*"],
-            effort_limit_sim=120,
-            stiffness=120,
-            damping=12,
         ),
     },
 )

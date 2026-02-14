@@ -1,0 +1,184 @@
+2026-02-15 01:42:40,690 INFO  AssemblyExportForm.cs: 309 - Saving URDF package to D:\UserData\Desktop\urdf\DOG_URDF_v2
+2026-02-15 01:42:40,699 INFO  ExportHelper.cs: 147 - Beginning the export process
+2026-02-15 01:42:40,701 INFO  ExportHelper.cs: 153 - Creating package directories with name DOG_URDF_v2 and save path D:\UserData\Desktop\urdf
+2026-02-15 01:42:42,223 INFO  ExportHelper.cs: 162 - Creating CMakeLists.txt at D:\UserData\Desktop\urdf\DOG_URDF_v2\CMakeLists.txt
+2026-02-15 01:42:42,224 INFO  ExportHelper.cs: 166 - Creating joint names config at D:\UserData\Desktop\urdf\DOG_URDF_v2\config\joint_names_DOG_URDF_v2.yaml
+2026-02-15 01:42:42,225 INFO  ExportHelper.cs: 170 - Creating package.xml at D:\UserData\Desktop\urdf\DOG_URDF_v2\package.xml
+2026-02-15 01:42:42,225 INFO  PackageXMLWriter.cs: 21 - Creating package.xml at D:\UserData\Desktop\urdf\DOG_URDF_v2\package.xml
+2026-02-15 01:42:42,227 INFO  ExportHelper.cs: 177 - Creating RVIZ launch file in D:\UserData\Desktop\urdf\DOG_URDF_v2\launch\
+2026-02-15 01:42:42,227 INFO  ExportHelper.cs: 182 - Creating Gazebo launch file in D:\UserData\Desktop\urdf\DOG_URDF_v2\launch\
+2026-02-15 01:42:42,228 INFO  ExportHelper.cs: 187 - Saving existing STL preferences
+2026-02-15 01:42:42,228 INFO  ExportHelper.cs: 450 - Saving users preferences
+2026-02-15 01:42:42,228 INFO  ExportHelper.cs: 190 - Modifying STL preferences
+2026-02-15 01:42:42,229 INFO  ExportHelper.cs: 464 - Setting STL preferences
+2026-02-15 01:42:42,229 INFO  ExportHelper.cs: 196 - Found 0 hidden components 
+2026-02-15 01:42:42,229 INFO  ExportHelper.cs: 197 - Hiding all components
+2026-02-15 01:42:42,704 INFO  ExportHelper.cs: 204 - Beginning individual files export
+2026-02-15 01:42:42,705 INFO  ExportHelper.cs: 270 - Exporting link: base_link
+2026-02-15 01:42:42,706 INFO  ExportHelper.cs: 272 - Link base_link has 3 children
+2026-02-15 01:42:42,707 INFO  ExportHelper.cs: 270 - Exporting link: Waist
+2026-02-15 01:42:42,707 INFO  ExportHelper.cs: 272 - Link Waist has 1 children
+2026-02-15 01:42:42,707 INFO  ExportHelper.cs: 270 - Exporting link: Waist_2
+2026-02-15 01:42:42,709 INFO  ExportHelper.cs: 272 - Link Waist_2 has 2 children
+2026-02-15 01:42:42,709 INFO  ExportHelper.cs: 270 - Exporting link: RSDp
+2026-02-15 01:42:42,709 INFO  ExportHelper.cs: 272 - Link RSDp has 1 children
+2026-02-15 01:42:42,710 INFO  ExportHelper.cs: 270 - Exporting link: RSDy
+2026-02-15 01:42:42,710 INFO  ExportHelper.cs: 272 - Link RSDy has 1 children
+2026-02-15 01:42:42,711 INFO  ExportHelper.cs: 270 - Exporting link: RSDr
+2026-02-15 01:42:42,711 INFO  ExportHelper.cs: 272 - Link RSDr has 1 children
+2026-02-15 01:42:42,712 INFO  ExportHelper.cs: 270 - Exporting link: RARMp
+2026-02-15 01:42:42,712 INFO  ExportHelper.cs: 272 - Link RARMp has 1 children
+2026-02-15 01:42:42,713 INFO  ExportHelper.cs: 270 - Exporting link: R_ARM_feet
+2026-02-15 01:42:42,714 INFO  ExportHelper.cs: 272 - Link R_ARM_feet has 0 children
+2026-02-15 01:42:42,714 INFO  ExportHelper.cs: 317 - R_ARM_feet: Exporting STL with coordinate frame Origin_R_ARM_feet
+2026-02-15 01:42:42,714 INFO  ExportHelper.cs: 322 - R_ARM_feet: Reference geometry name 
+2026-02-15 01:42:42,740 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\R_ARM_feet.STL
+2026-02-15 01:42:42,793 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:42,794 INFO  ExportHelper.cs: 317 - RARMp: Exporting STL with coordinate frame Origin_RARMp
+2026-02-15 01:42:42,794 INFO  ExportHelper.cs: 322 - RARMp: Reference geometry name 
+2026-02-15 01:42:42,813 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RARMp.STL
+2026-02-15 01:42:42,926 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:42,927 INFO  ExportHelper.cs: 317 - RSDr: Exporting STL with coordinate frame Origin_RSDr
+2026-02-15 01:42:42,927 INFO  ExportHelper.cs: 322 - RSDr: Reference geometry name 
+2026-02-15 01:42:42,951 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RSDr.STL
+2026-02-15 01:42:43,621 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:43,621 INFO  ExportHelper.cs: 317 - RSDy: Exporting STL with coordinate frame Origin_RSDy
+2026-02-15 01:42:43,623 INFO  ExportHelper.cs: 322 - RSDy: Reference geometry name 
+2026-02-15 01:42:43,640 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RSDy.STL
+2026-02-15 01:42:43,690 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:43,690 INFO  ExportHelper.cs: 317 - RSDp: Exporting STL with coordinate frame Origin_RSDp
+2026-02-15 01:42:43,692 INFO  ExportHelper.cs: 322 - RSDp: Reference geometry name 
+2026-02-15 01:42:43,711 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RSDp.STL
+2026-02-15 01:42:43,786 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:43,787 INFO  ExportHelper.cs: 270 - Exporting link: LSDp
+2026-02-15 01:42:43,788 INFO  ExportHelper.cs: 272 - Link LSDp has 1 children
+2026-02-15 01:42:43,788 INFO  ExportHelper.cs: 270 - Exporting link: LSDy
+2026-02-15 01:42:43,789 INFO  ExportHelper.cs: 272 - Link LSDy has 1 children
+2026-02-15 01:42:43,789 INFO  ExportHelper.cs: 270 - Exporting link: LSDr
+2026-02-15 01:42:43,791 INFO  ExportHelper.cs: 272 - Link LSDr has 1 children
+2026-02-15 01:42:43,791 INFO  ExportHelper.cs: 270 - Exporting link: LARMp
+2026-02-15 01:42:43,792 INFO  ExportHelper.cs: 272 - Link LARMp has 1 children
+2026-02-15 01:42:43,792 INFO  ExportHelper.cs: 270 - Exporting link: L_arm_feet
+2026-02-15 01:42:43,793 INFO  ExportHelper.cs: 272 - Link L_arm_feet has 0 children
+2026-02-15 01:42:43,793 INFO  ExportHelper.cs: 317 - L_arm_feet: Exporting STL with coordinate frame Origin_L_arm_feet
+2026-02-15 01:42:43,793 INFO  ExportHelper.cs: 322 - L_arm_feet: Reference geometry name 
+2026-02-15 01:42:43,818 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\L_arm_feet.STL
+2026-02-15 01:42:43,874 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:43,874 INFO  ExportHelper.cs: 317 - LARMp: Exporting STL with coordinate frame Origin_LARMp
+2026-02-15 01:42:43,875 INFO  ExportHelper.cs: 322 - LARMp: Reference geometry name 
+2026-02-15 01:42:43,897 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LARMp.STL
+2026-02-15 01:42:44,013 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:44,014 INFO  ExportHelper.cs: 317 - LSDr: Exporting STL with coordinate frame Origin_LSDr
+2026-02-15 01:42:44,014 INFO  ExportHelper.cs: 322 - LSDr: Reference geometry name 
+2026-02-15 01:42:44,042 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LSDr.STL
+2026-02-15 01:42:44,733 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:44,734 INFO  ExportHelper.cs: 317 - LSDy: Exporting STL with coordinate frame Origin_LSDy
+2026-02-15 01:42:44,740 INFO  ExportHelper.cs: 322 - LSDy: Reference geometry name 
+2026-02-15 01:42:44,810 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LSDy.STL
+2026-02-15 01:42:44,870 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:44,871 INFO  ExportHelper.cs: 317 - LSDp: Exporting STL with coordinate frame Origin_LSDp
+2026-02-15 01:42:44,873 INFO  ExportHelper.cs: 322 - LSDp: Reference geometry name 
+2026-02-15 01:42:44,894 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LSDp.STL
+2026-02-15 01:42:44,976 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:44,977 INFO  ExportHelper.cs: 317 - Waist_2: Exporting STL with coordinate frame Origin_Waist_2
+2026-02-15 01:42:44,977 INFO  ExportHelper.cs: 322 - Waist_2: Reference geometry name 
+2026-02-15 01:42:45,444 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\Waist_2.STL
+2026-02-15 01:42:48,013 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:48,014 INFO  ExportHelper.cs: 317 - Waist: Exporting STL with coordinate frame Origin_Waist
+2026-02-15 01:42:48,015 INFO  ExportHelper.cs: 322 - Waist: Reference geometry name 
+2026-02-15 01:42:48,037 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\Waist.STL
+2026-02-15 01:42:48,097 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:48,100 INFO  ExportHelper.cs: 270 - Exporting link: RHIPp
+2026-02-15 01:42:48,100 INFO  ExportHelper.cs: 272 - Link RHIPp has 1 children
+2026-02-15 01:42:48,101 INFO  ExportHelper.cs: 270 - Exporting link: RHIPy
+2026-02-15 01:42:48,101 INFO  ExportHelper.cs: 272 - Link RHIPy has 1 children
+2026-02-15 01:42:48,101 INFO  ExportHelper.cs: 270 - Exporting link: RHIPr
+2026-02-15 01:42:48,102 INFO  ExportHelper.cs: 272 - Link RHIPr has 1 children
+2026-02-15 01:42:48,102 INFO  ExportHelper.cs: 270 - Exporting link: RKNEEP
+2026-02-15 01:42:48,103 INFO  ExportHelper.cs: 272 - Link RKNEEP has 1 children
+2026-02-15 01:42:48,103 INFO  ExportHelper.cs: 270 - Exporting link: R_Feet
+2026-02-15 01:42:48,105 INFO  ExportHelper.cs: 272 - Link R_Feet has 0 children
+2026-02-15 01:42:48,105 INFO  ExportHelper.cs: 317 - R_Feet: Exporting STL with coordinate frame Origin_R_Feet
+2026-02-15 01:42:48,106 INFO  ExportHelper.cs: 322 - R_Feet: Reference geometry name 
+2026-02-15 01:42:48,128 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\R_Feet.STL
+2026-02-15 01:42:48,183 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:48,183 INFO  ExportHelper.cs: 317 - RKNEEP: Exporting STL with coordinate frame Origin_RKNEEP
+2026-02-15 01:42:48,184 INFO  ExportHelper.cs: 322 - RKNEEP: Reference geometry name 
+2026-02-15 01:42:48,205 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RKNEEP.STL
+2026-02-15 01:42:48,327 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:48,327 INFO  ExportHelper.cs: 317 - RHIPr: Exporting STL with coordinate frame Origin_RHIPr
+2026-02-15 01:42:48,328 INFO  ExportHelper.cs: 322 - RHIPr: Reference geometry name 
+2026-02-15 01:42:48,360 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RHIPr.STL
+2026-02-15 01:42:49,023 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:49,024 INFO  ExportHelper.cs: 317 - RHIPy: Exporting STL with coordinate frame Origin_RHIPy
+2026-02-15 01:42:49,024 INFO  ExportHelper.cs: 322 - RHIPy: Reference geometry name 
+2026-02-15 01:42:49,044 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RHIPy.STL
+2026-02-15 01:42:49,095 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:49,095 INFO  ExportHelper.cs: 317 - RHIPp: Exporting STL with coordinate frame Origin_RHIPp
+2026-02-15 01:42:49,097 INFO  ExportHelper.cs: 322 - RHIPp: Reference geometry name 
+2026-02-15 01:42:49,115 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\RHIPp.STL
+2026-02-15 01:42:49,187 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:49,189 INFO  ExportHelper.cs: 270 - Exporting link: LHIPp
+2026-02-15 01:42:49,189 INFO  ExportHelper.cs: 272 - Link LHIPp has 1 children
+2026-02-15 01:42:49,190 INFO  ExportHelper.cs: 270 - Exporting link: LHIPy
+2026-02-15 01:42:49,190 INFO  ExportHelper.cs: 272 - Link LHIPy has 1 children
+2026-02-15 01:42:49,191 INFO  ExportHelper.cs: 270 - Exporting link: LHIPr
+2026-02-15 01:42:49,191 INFO  ExportHelper.cs: 272 - Link LHIPr has 1 children
+2026-02-15 01:42:49,192 INFO  ExportHelper.cs: 270 - Exporting link: LKNEEp
+2026-02-15 01:42:49,192 INFO  ExportHelper.cs: 272 - Link LKNEEp has 1 children
+2026-02-15 01:42:49,193 INFO  ExportHelper.cs: 270 - Exporting link: L_Feet
+2026-02-15 01:42:49,193 INFO  ExportHelper.cs: 272 - Link L_Feet has 0 children
+2026-02-15 01:42:49,194 INFO  ExportHelper.cs: 317 - L_Feet: Exporting STL with coordinate frame Origin_L_Feet
+2026-02-15 01:42:49,194 INFO  ExportHelper.cs: 322 - L_Feet: Reference geometry name 
+2026-02-15 01:42:49,219 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\L_Feet.STL
+2026-02-15 01:42:49,271 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:49,272 INFO  ExportHelper.cs: 317 - LKNEEp: Exporting STL with coordinate frame Origin_LKNEEp
+2026-02-15 01:42:49,272 INFO  ExportHelper.cs: 322 - LKNEEp: Reference geometry name 
+2026-02-15 01:42:49,293 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LKNEEp.STL
+2026-02-15 01:42:49,404 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:49,404 INFO  ExportHelper.cs: 317 - LHIPr: Exporting STL with coordinate frame Origin_LHIPr
+2026-02-15 01:42:49,405 INFO  ExportHelper.cs: 322 - LHIPr: Reference geometry name 
+2026-02-15 01:42:49,431 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LHIPr.STL
+2026-02-15 01:42:50,085 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:50,086 INFO  ExportHelper.cs: 317 - LHIPy: Exporting STL with coordinate frame Origin_LHIPy
+2026-02-15 01:42:50,087 INFO  ExportHelper.cs: 322 - LHIPy: Reference geometry name 
+2026-02-15 01:42:50,110 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LHIPy.STL
+2026-02-15 01:42:50,168 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:50,169 INFO  ExportHelper.cs: 317 - LHIPp: Exporting STL with coordinate frame Origin_LHIPp
+2026-02-15 01:42:50,169 INFO  ExportHelper.cs: 322 - LHIPp: Reference geometry name 
+2026-02-15 01:42:50,194 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\LHIPp.STL
+2026-02-15 01:42:50,273 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:50,274 INFO  ExportHelper.cs: 317 - base_link: Exporting STL with coordinate frame Origin_global
+2026-02-15 01:42:50,274 INFO  ExportHelper.cs: 322 - base_link: Reference geometry name 
+2026-02-15 01:42:50,313 INFO  ExportHelper.cs: 330 - Saving STL to D:\UserData\Desktop\urdf\DOG_URDF_v2\meshes\base_link.STL
+2026-02-15 01:42:51,841 INFO  ExportHelper.cs: 405 - Removing SW header in STL file
+2026-02-15 01:42:51,842 INFO  ExportHelper.cs: 145 - Showing all components except previously hidden components
+2026-02-15 01:42:52,431 INFO  ExportHelper.cs: 145 - Resetting STL preferences
+2026-02-15 01:42:52,433 INFO  ExportHelper.cs: 478 - Returning STL preferences to user preferences
+2026-02-15 01:42:52,433 INFO  ExportHelper.cs: 228 - Writing URDF file to D:\UserData\Desktop\urdf\DOG_URDF_v2\urdf\DOG_URDF_v2.urdf
+2026-02-15 01:42:52,435 INFO  CSVImportExport.cs: 32 - Writing CSV file D:\UserData\Desktop\urdf\DOG_URDF_v2\urdf\DOG_URDF_v2.csv
+2026-02-15 01:42:52,436 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,436 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,436 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,437 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,438 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,438 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,438 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,439 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,440 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,440 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,440 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,441 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,441 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,441 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,441 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,442 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,442 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,442 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,443 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,443 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,443 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,444 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,444 ERROR CSVImportExport.cs: 130 - The following columns were not written to the CSV: Link.Joint.ChildLink.link,
+2026-02-15 01:42:52,445 INFO  ExportHelper.cs: 234 - Copying log file
+2026-02-15 01:42:52,445 INFO  ExportHelper.cs: 439 - Copying C:\Users\34802\sw2urdf_logs\sw2urdf.log to D:\UserData\Desktop\urdf\DOG_URDF_v2\export.log
