@@ -1,18 +1,12 @@
-<mujoco model="V4_Quadruped">
+<mujoco model="DOG_V5">
     <compiler angle="radian" meshdir="assets" autolimits="true"/>
 
     <default>
         <default class="v4robot">
-
             <joint damping="0" armature="0.01" frictionloss="0.0"/>
             <geom contype="0" conaffinity="0"/>
         </default>
-        <default class="visual">
-            <geom type="mesh" contype="0" conaffinity="0" group="2" material="metal"/>
-        </default>
         <default class="collision">
-
-
             <geom type="mesh" group="1" condim="4" friction="1.0 0.3 0.01"
                   contype="1" conaffinity="2"
                   solref="0.004 1" solimp="0.9 0.95 0.001"/>
@@ -20,256 +14,158 @@
     </default>
 
     <asset>
-
         <mesh name="base_link" file="base_link.STL"/>
         <mesh name="Waist" file="Waist.STL"/>
         <mesh name="Waist_2" file="Waist_2.STL"/>
-
         <mesh name="RSDp" file="RSDp.STL"/>
         <mesh name="RSDy" file="RSDy.STL"/>
         <mesh name="RSDr" file="RSDr.STL"/>
         <mesh name="RARMp" file="RARMp.STL"/>
-        <mesh name="RARMAP" file="RARMAP.STL"/>
-        <mesh name="RARMAy" file="RARMAy.STL"/>
-
+        <mesh name="R_ARM_feet" file="R_ARM_feet.STL"/>
         <mesh name="LSDp" file="LSDp.STL"/>
         <mesh name="LSDy" file="LSDy.STL"/>
         <mesh name="LSDr" file="LSDr.STL"/>
         <mesh name="LARMp" file="LARMp.STL"/>
-        <mesh name="LARMAp" file="LARMAp.STL"/>
-        <mesh name="LARMAy" file="LARMAy.STL"/>
-
+        <mesh name="L_arm_feet" file="L_arm_feet.STL"/>
         <mesh name="RHIPp" file="RHIPp.STL"/>
         <mesh name="RHIPy" file="RHIPy.STL"/>
         <mesh name="RHIPr" file="RHIPr.STL"/>
         <mesh name="RKNEEP" file="RKNEEP.STL"/>
-        <mesh name="RANKLEp" file="RANKLEp.STL"/>
-        <mesh name="RANKLEy" file="RANKLEy.STL"/>
-
+        <mesh name="R_Feet" file="R_Feet.STL"/>
         <mesh name="LHIPp" file="LHIPp.STL"/>
         <mesh name="LHIPy" file="LHIPy.STL"/>
         <mesh name="LHIPr" file="LHIPr.STL"/>
         <mesh name="LKNEEp" file="LKNEEp.STL"/>
-        <mesh name="LANKLEp" file="LANKLEp.STL"/>
-        <mesh name="LANKLEy" file="LANKLEy.STL"/>
-        <material name="metal" rgba="0.8 0.8 0.8 1"/>
+        <mesh name="L_Feet" file="L_Feet.STL"/>
     </asset>
 
     <worldbody>
-
-        <body name="base_link" pos="0 0 0.23" quat="0.7071 0.7071 0 0" childclass="v4robot">
+        <!-- base_link with freejoint -->
+        <body name="base_link" pos="0 0 0.35" quat="0.7071 0.7071 0 0" childclass="v4robot">
             <freejoint/>
-            <inertial pos="0.0005 -0.01 0.0173" mass="0.335" diaginertia="7.27e-05 6.99e-05 1.98e-05"/>
-            <geom type="mesh" mesh="base_link" class="visual" rgba="0.79 0.82 0.93 1"/>
+            <inertial pos="0.000500911 -0.00998629 0.0173218" quat="0.500539 0.499461 0.500539 0.499461" mass="0.750376" diaginertia="0.000401074 0.000386026 0.000109157"/>
+            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="base_link"/>
             <geom type="mesh" mesh="base_link" class="collision"/>
+            <!-- Waist visual (fixed to base_link) -->
+            <geom pos="0.00275 0.02161 0.04211" quat="0.707107 0.707107 0 0" type="mesh" rgba="1 1 1 1" mesh="Waist"/>
+            <geom pos="0.00275 0.02161 0.04211" quat="0.707107 0.707107 0 0" type="mesh" mesh="Waist" class="collision"/>
 
+            <!-- Waist_2 -->
+            <body name="Waist_2" pos="0.00491482 -0.0275937 0.026256" quat="-0.00105015 0.00105015 0.707106 0.707106">
+                <inertial pos="0.002765 0.196357 0.0254714" quat="0.0131414 0.723502 0.0112021 0.690106" mass="2.2727" diaginertia="0.00628782 0.00449622 0.00331098"/>
+                <joint name="Waist_2" pos="0 0 0" axis="-0.00297028 -0.999996 0" range="-6.3 6.3"/>
+                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="Waist_2"/>
+                <geom type="mesh" mesh="Waist_2" class="collision"/>
 
-            <body name="Waist" pos="0.00275 0 0.04211" quat="0.7071 0.7071 0 0">
-                <inertial pos="0 0.0325 0.00532" mass="0.0152" diaginertia="9.63e-06 5.88e-06 5.40e-06"/>
-                <geom type="mesh" mesh="Waist" class="visual" rgba="1 1 1 1"/>
-                <geom type="mesh" mesh="Waist" class="collision"/>
+                <!-- Right Arm -->
+                <body name="RSDp" pos="-0.12555 0.18104 0.039621" quat="-0.0267098 0.00245595 0.998995 0.0359158">
+                    <inertial pos="-0.0178691 -0.0245377 -0.00594363" quat="0.76001 -0.09523 -0.0619561 0.639904" mass="0.0478541" diaginertia="1.45327e-05 1.37801e-05 4.06418e-06"/>
+                    <joint name="RSDp" pos="0 0 0" axis="1 0 0" range="-1.57 1.57"/>
+                    <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RSDp"/>
+                    <geom type="mesh" mesh="RSDp" class="collision"/>
 
-                <body name="Waist_2" pos="0 0.021605 0.00067" quat="0 0 0.99999 0.00149">
-                    <inertial pos="0.000489 0.1589 -0.00145" mass="0.662"
-                              diaginertia="0.00114 0.000815 0.000601"/>
-                    <joint name="Waist_2" axis="0 -1 0" range="-6.28 6.28"/>
-                    <geom type="mesh" mesh="Waist_2" class="visual" rgba="0.79 0.82 0.93 1"/>
-                    <geom type="mesh" mesh="Waist_2" class="collision"/>
+                    <body name="RSDy">
+                        <inertial pos="0.00970265 -0.114224 -0.0065645" quat="0.736874 0.649887 0.172037 -0.071181" mass="0.325391" diaginertia="0.000115081 0.000113439 2.40191e-05"/>
+                        <joint name="RSDy" pos="0 0 0" axis="0 0.0717638 -0.997422" range="-1.4 0.14"/>
+                        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RSDy"/>
+                        <geom type="mesh" mesh="RSDy" class="collision"/>
+                        <!-- RSDr (fixed, visual+collision) -->
+                        <geom pos="-0.0111951 -0.0103012 0.00605837" quat="-0.000704554 0.0178668 -0.999076 -0.0390707" type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RSDr"/>
+                        <geom pos="-0.0111951 -0.0103012 0.00605837" quat="-0.000704554 0.0178668 -0.999076 -0.0390707" type="mesh" mesh="RSDr" class="collision"/>
 
-
-                    <body name="RSDp" pos="-0.081055 0.13392 0.003366" euler="3.0698 -0.053568 3.1386">
-                        <inertial pos="0.02937 -0.01454 -0.01205" mass="0.0267"
-                                  diaginertia="2.62e-06 2.42e-06 8.26e-07"/>
-                        <joint name="RSDp" axis="1 0 0" range="-1.57 1.57"/>
-                        <geom type="mesh" mesh="RSDp" class="visual" rgba="0.79 0.82 0.93 1"/>
-                        <geom type="mesh" mesh="RSDp" class="collision"/>
-
-                        <body name="RSDy" pos="0.047234 0.01 -0.00611">
-                            <inertial pos="-0.00269 -0.04329 -0.01217" mass="0.00796"
-                                      diaginertia="7.44e-07 5.11e-07 4.13e-07"/>
-                            <joint name="RSDy" axis="0 0.071764 -0.99742" range="-1.39 0.14"/>
-                            <geom type="mesh" mesh="RSDy" class="visual" rgba="0.79 0.82 0.93 1"/>
-                            <geom type="mesh" mesh="RSDy" class="collision"/>
-
-
-                            <body name="RSDr" pos="-0.0052192 -0.057271 0.0026804" euler="3.0635 0.002804 -3.1059">
-                                <inertial pos="-0.000649 -0.06445 -0.00501" mass="0.2167"
-                                          diaginertia="5.30e-06 5.27e-06 3.89e-06"/>
-                                <geom type="mesh" mesh="RSDr" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                <geom type="mesh" mesh="RSDr" class="collision"/>
-
-                                <body name="RARMp" pos="0.0033115 -0.092555 -0.00059797" euler="0.0063485 1.1667e-05 0.035763">
-                                    <inertial pos="-0.01099 -0.03930 -0.00773" mass="0.1387"
-                                              diaginertia="5.89e-06 4.83e-06 1.85e-06"/>
-                                    <joint name="RARMp" axis="1 0 0" range="-2.26 0.29"/>
-                                    <geom type="mesh" mesh="RARMp" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                    <geom type="mesh" mesh="RARMp" class="collision"/>
-
-                                    <body name="RARMAP" pos="-0.0035 -0.14 0" euler="-3.1416 0.053568 3.1416">
-                                        <inertial pos="0 0 0" mass="0.00289"
-                                                  diaginertia="3.48e-08 3.48e-08 3.48e-08"/>
-                                        <joint name="RARMAP" axis="-0.99857 0 0.053543" range="-0.06 1.04"/>
-                                        <geom type="mesh" mesh="RARMAP" class="visual" rgba="0.78 0.76 0.74 1"/>
-                                        <geom type="mesh" mesh="RARMAP" class="collision"/>
-
-
-                                        <body name="RARMAy" pos="0 0 0" euler="0 0.053568 0">
-                                   <inertial pos="0 -0.01742 0.02440" mass="0.02488"
-                                                       diaginertia="6.08e-06 5.08e-06 1.18e-06"/>
-                                            <geom type="mesh" mesh="RARMAy" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                            <geom type="mesh" mesh="RARMAy" class="collision"/>
-                                        </body>
-                                    </body>
-                                </body>
-                            </body>
+                        <body name="RARMp" pos="-0.00171928 -0.149644 -0.00396582" quat="-7.47079e-09 1.71101e-07 -0.999355 -0.035905">
+                            <inertial pos="0.0212651 -0.00620283 -0.109581" quat="0.984029 0.117426 -0.13368 -0.00534131" mass="0.345212" diaginertia="0.00218453 0.00218155 8.54767e-05"/>
+                            <joint name="RARMp" pos="0 0 0" axis="1 0 0" range="-2.3 0.29"/>
+                            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RARMp"/>
+                            <geom type="mesh" mesh="RARMp" class="collision"/>
+                            <!-- R_ARM_feet (fixed) -->
+                            <geom pos="0 -0.1635 0" quat="-0.0267809 0 -0.999641 0" type="mesh" rgba="1 1 1 1" mesh="R_ARM_feet"/>
+                            <geom pos="0 -0.1635 0" quat="-0.0267809 0 -0.999641 0" type="mesh" mesh="R_ARM_feet" class="collision"/>
                         </body>
                     </body>
+                </body>
 
+                <!-- Left Arm -->
+                <body name="LSDp" pos="0.120017 0.17091 0.0197305" quat="-0.0262525 0.000294739 0.999655 7.1496e-05">
+                    <inertial pos="0.00532159 -0.0161946 -0.0114893" quat="0.645694 0.0386131 0.12288 0.752654" mass="0.0454989" diaginertia="1.44832e-05 1.36849e-05 4.00807e-06"/>
+                    <joint name="LSDp" pos="0 0 0" axis="0.999997 0.00238067 -0.00105698" range="-1.57 1.57"/>
+                    <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LSDp"/>
+                    <geom type="mesh" mesh="LSDp" class="collision"/>
 
-                    <body name="LSDp" pos="0.085975 0.13342 -0.0055901" euler="3.1415 -0.052511 3.141">
-                        <inertial pos="-0.02649 -0.01614 -0.01156" mass="0.0267"
-                                  diaginertia="2.59e-06 2.40e-06 8.42e-07"/>
-                        <joint name="LSDp" axis="1 0.0023807 -0.001057" range="-1.57 1.57"/>
-                        <geom type="mesh" mesh="LSDp" class="visual" rgba="0.79 0.82 0.93 1"/>
-                        <geom type="mesh" mesh="LSDp" class="collision"/>
+                    <body name="LSDy">
+                        <inertial pos="-0.019762 -0.123889 -0.00818481" quat="0.735176 0.656644 -0.150412 0.0755714" mass="0.332184" diaginertia="0.000161788 0.000159719 2.4202e-05"/>
+                        <joint name="LSDy" pos="0 0 0" axis="-0.00105698 0 -0.999999" range="-0.14 1.4"/>
+                        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LSDy"/>
+                        <geom type="mesh" mesh="LSDy" class="collision"/>
+                        <!-- LSDr (fixed) -->
+                        <geom pos="-0.011212 0.00962608 0.00678894" quat="-0.000528151 1.89755e-05 0.999355 0.035905" type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LSDr"/>
+                        <geom pos="-0.011212 0.00962608 0.00678894" quat="-0.000528151 1.89755e-05 0.999355 0.035905" type="mesh" mesh="LSDr" class="collision"/>
 
-                        <body name="LSDy" pos="-0.031807 5.6518e-05 -6.6398e-05">
-                            <inertial pos="-0.00854 -0.03448 -0.01583" mass="0.00796"
-                                      diaginertia="7.44e-07 5.40e-07 3.85e-07"/>
-                            <joint name="LSDy" axis="-0.001057 0 -1" range="-0.14 1.39"/>
-                            <geom type="mesh" mesh="LSDy" class="visual" rgba="0.79 0.82 0.93 1"/>
-                            <geom type="mesh" mesh="LSDy" class="collision"/>
-
-
-                            <body name="LSDr" pos="-0.006 -0.047115 0" euler="3.0698 -0.001057 3.1416">
-                                <inertial pos="-0.000142 -0.06472 -0.00917" mass="0.2167"
-                                          diaginertia="5.32e-06 5.35e-06 3.90e-06"/>
-                                <geom type="mesh" mesh="LSDr" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                <geom type="mesh" mesh="LSDr" class="collision"/>
-
-                                <body name="LARMp" pos="0 -0.092566 -0.00666" euler="0.071826 0 0">
-                                    <inertial pos="0.00721 -0.03784 -0.00744" mass="0.1387"
-                                              diaginertia="5.94e-06 4.85e-06 1.87e-06"/>
-                                    <joint name="LARMp" axis="-1 0 0" range="-0.29 2.26"/>
-                                    <geom type="mesh" mesh="LARMp" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                    <geom type="mesh" mesh="LARMp" class="collision"/>
-
-                                    <body name="LARMAp" pos="0 -0.14 0" euler="1.5708 0 -1.5708">
-                                        <inertial pos="0 0 0" mass="0.00289"
-                                                  diaginertia="3.48e-08 3.48e-08 3.48e-08"/>
-                                        <joint name="LARMAp" axis="0 0 -1" range="-0.06 1.04"/>
-                                        <geom type="mesh" mesh="LARMAp" class="visual" rgba="0.78 0.76 0.74 1"/>
-                                        <geom type="mesh" mesh="LARMAp" class="collision"/>
-
-
-                                        <body name="LARMAy" pos="0 0 0" euler="-1.5708 1.5708 0">
-                                            <inertial pos="0 -0.01742 -0.02440" mass="0.02488"
-                                                      diaginertia="6.08e-06 5.08e-06 1.18e-06"/>
-                                            <geom type="mesh" mesh="LARMAy" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                            <geom type="mesh" mesh="LARMAy" class="collision"/>
-                                        </body>
-                                    </body>
-                                </body>
-                            </body>
+                        <body name="LARMp" pos="-0.006 -0.13992 0" quat="-0.000528492 0 1 0">
+                            <inertial pos="0.0263637 -0.00618436 -0.107338" quat="0.986977 0.120879 -0.074086 -0.0760047" mass="0.350241" diaginertia="0.00212368 0.0021204 8.55509e-05"/>
+                            <joint name="LARMp" pos="0 0 0" axis="-1 0 0" range="-0.29 2.3"/>
+                            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LARMp"/>
+                            <geom type="mesh" mesh="LARMp" class="collision"/>
+                            <!-- L_arm_feet (fixed) -->
+                            <geom pos="0 -0.16248 0" quat="0.0267809 9.65436e-12 0.999641 0" type="mesh" rgba="1 1 1 1" mesh="L_arm_feet"/>
+                            <geom pos="0 -0.16248 0" quat="0.0267809 9.65436e-12 0.999641 0" type="mesh" mesh="L_arm_feet" class="collision"/>
                         </body>
                     </body>
                 </body>
             </body>
 
-
-            <body name="RHIPp" pos="0.017714 0 0" euler="1.499 0 0">
-                <inertial pos="0.02957 -0.01454 -0.01205" mass="0.0267"
-                          diaginertia="2.62e-06 2.42e-06 8.26e-07"/>
-                <joint name="RHIPp" axis="-1 0 0" range="-1.57 1.57"/>
-                <geom type="mesh" mesh="RHIPp" class="visual" rgba="0.79 0.82 0.93 1"/>
+            <!-- Right Leg -->
+            <body name="RHIPp" pos="0.06515 0.0068119 0.0095357" quat="0.73203 0.681273 0 0">
+                <inertial pos="-0.0178691 -0.0245377 -0.00594363" quat="0.76001 -0.09523 -0.0619561 0.639904" mass="0.0478541" diaginertia="1.45327e-05 1.37801e-05 4.06418e-06"/>
+                <joint name="RHIPp" pos="0 0 0" axis="-1 0 0" range="-1.57 1.57"/>
+                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RHIPp"/>
                 <geom type="mesh" mesh="RHIPp" class="collision"/>
 
-                <body name="RHIPy" pos="0.047436 0.01 -0.00611">
-                    <inertial pos="-0.00269 -0.04329 -0.01217" mass="0.00796"
-                              diaginertia="7.44e-07 5.11e-07 4.13e-07"/>
-                    <joint name="RHIPy" axis="0 0.071764 -0.99742" range="-1.39 0.14"/>
-                    <geom type="mesh" mesh="RHIPy" class="visual" rgba="0.79 0.82 0.93 1"/>
+                <body name="RHIPy">
+                    <inertial pos="-0.00524076 -0.118266 -0.00672984" quat="0.71419 0.651381 -0.183412 0.178873" mass="0.332184" diaginertia="0.000122717 0.000119904 2.41492e-05"/>
+                    <joint name="RHIPy" pos="0 0 0" axis="0 0.0717638 -0.997422" range="-1.4 0.14"/>
+                    <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RHIPy"/>
                     <geom type="mesh" mesh="RHIPy" class="collision"/>
+                    <!-- RHIPr (fixed) -->
+                    <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RHIPr"/>
+                    <geom type="mesh" mesh="RHIPr" class="collision"/>
 
-
-                    <body name="RHIPr" pos="-0.0052192 -0.057244 0.0026823">
-                        <inertial pos="-0.000142 -0.06455 -0.00916" mass="0.2167"
-                                  diaginertia="5.32e-06 5.35e-06 3.90e-06"/>
-                        <geom type="mesh" mesh="RHIPr" class="visual" rgba="0.79 0.82 0.93 1"/>
-                        <geom type="mesh" mesh="RHIPr" class="collision"/>
-
-                        <body name="RKNEEP" pos="0 -0.092403 -0.0066483" euler="0.069755 0 0">
-                            <inertial pos="0.00721 -0.03784 -0.00744" mass="0.1387"
-                                      diaginertia="5.94e-06 4.83e-06 1.85e-06"/>
-                            <joint name="RKNEEP" axis="-1 0 0" range="-0.29 2.26"/>
-                            <geom type="mesh" mesh="RKNEEP" class="visual" rgba="0.79 0.82 0.93 1"/>
-                            <geom type="mesh" mesh="RKNEEP" class="collision"/>
-
-                            <body name="RANKLEp" pos="0 -0.14 0">
-                                <inertial pos="0 0 0" mass="0.00289"
-                                          diaginertia="3.48e-08 3.48e-08 3.48e-08"/>
-                                <joint name="RANKLEp" axis="-1 0 0" range="-1.04 0.06"/>
-                                <geom type="mesh" mesh="RANKLEp" class="visual" rgba="0.78 0.76 0.74 1"/>
-                                <geom type="mesh" mesh="RANKLEp" class="collision"/>
-
-
-                                <body name="RANKLEy" pos="0 0 0" euler="0 0 -9.6776e-05">
-                                    <inertial pos="0 -0.01742 -0.02440" mass="0.02488"
-                                              diaginertia="6.08e-06 5.08e-06 1.18e-06"/>
-                          <geom type="mesh" mesh="RANKLEy" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                    <geom type="mesh" mesh="RANKLEy" class="collision"/>
-                                </body>
-                            </body>
-                        </body>
+                    <body name="RKNEEP" pos="-0.00521918 -0.149648 -0.00396608" quat="0.999355 0.035905 0 0">
+                        <inertial pos="0.0265175 -0.00611377 -0.108004" quat="0.987005 0.120504 -0.0743062 -0.0760154" mass="0.350241" diaginertia="0.00214923 0.00214596 8.55506e-05"/>
+                        <joint name="RKNEEP" pos="0 0 0" axis="-1 0 0" range="-0.29 2.3"/>
+                        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RKNEEP"/>
+                        <geom type="mesh" mesh="RKNEEP" class="collision"/>
+                        <!-- R_Feet (fixed) -->
+                        <geom pos="0 -0.1635 0" quat="1 0 0 0" type="mesh" rgba="1 1 1 1" mesh="R_Feet"/>
+                        <geom pos="0 -0.1635 0" quat="1 0 0 0" type="mesh" mesh="R_Feet" class="collision"/>
                     </body>
                 </body>
             </body>
 
-
-            <body name="LHIPp" pos="-0.022372 0 0" euler="1.5708 0.0023807 -0.001057">
-                <inertial pos="-0.02675 -0.01614 -0.01156" mass="0.0267"
-                          diaginertia="2.59e-06 2.40e-06 8.42e-07"/>
-                <joint name="LHIPp" axis="1 0.0023807 -0.001057" range="-1.57 1.57"/>
-                <geom type="mesh" mesh="LHIPp" class="visual" rgba="0.79 0.82 0.93 1"/>
+            <!-- Left Leg -->
+            <body name="LHIPp" pos="-0.0544468 0.000100017 0.000132238" quat="0.707107 0.707106 0.000467994 -0.00121539">
+                <inertial pos="0.00532159 -0.0161946 -0.0114893" quat="0.645694 0.0386131 0.12288 0.752654" mass="0.0454989" diaginertia="1.44832e-05 1.36849e-05 4.00807e-06"/>
+                <joint name="LHIPp" pos="0 0 0" axis="0.999997 0.00238067 -0.00105698" range="-1.57 1.57"/>
+                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LHIPp"/>
                 <geom type="mesh" mesh="LHIPp" class="collision"/>
 
-                <body name="LHIPy" pos="-0.032075 5.5879e-05 -6.6114e-05">
-                    <inertial pos="-0.00854 -0.03448 -0.01583" mass="0.00796"
-                              diaginertia="7.44e-07 5.40e-07 3.85e-07"/>
-                    <joint name="LHIPy" axis="-0.001057 0 -1" range="-0.14 1.39"/>
-                    <geom type="mesh" mesh="LHIPy" class="visual" rgba="0.79 0.82 0.93 1"/>
+                <body name="LHIPy">
+                    <inertial pos="-0.00511853 -0.108378 -0.00580023" quat="0.732495 0.62532 0.189311 -0.191278" mass="0.325391" diaginertia="0.000121257 0.000118421 2.40448e-05"/>
+                    <joint name="LHIPy" pos="0 0 0" axis="-0.00105698 0 -0.999999" range="-0.14 1.4"/>
+                    <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LHIPy"/>
                     <geom type="mesh" mesh="LHIPy" class="collision"/>
+                    <!-- LHIPr (fixed) -->
+                    <geom pos="0 0 0" quat="0.999835 -0.00318308 0.000465814 -0.0178789" type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LHIPr"/>
+                    <geom pos="0 0 0" quat="0.999835 -0.00318308 0.000465814 -0.0178789" type="mesh" mesh="LHIPr" class="collision"/>
 
-
-                    <body name="LHIPr" pos="-0.006 -0.04714 0" euler="-0.0063818 0.00081765 -0.035763">
-                        <inertial pos="-0.000643 -0.06461 -0.00501" mass="0.2167"
-                                  diaginertia="5.30e-06 5.27e-06 3.89e-06"/>
-                        <geom type="mesh" mesh="LHIPr" class="visual" rgba="0.79 0.82 0.93 1"/>
-                        <geom type="mesh" mesh="LHIPr" class="collision"/>
-
-                        <body name="LKNEEp" pos="0.0033174 -0.09272 -0.00059902" euler="0.020071 1.1667e-05 0.035763">
-                            <inertial pos="-0.01099 -0.03930 -0.00773" mass="0.1387"
-                                   diaginertia="5.89e-06 4.83e-06 1.85e-06"/>
-                            <joint name="LKNEEp" axis="1 0 0" range="-2.26 0.29"/>
-                            <geom type="mesh" mesh="LKNEEp" class="visual" rgba="0.79 0.82 0.93 1"/>
-                            <geom type="mesh" mesh="LKNEEp" class="collision"/>
-
-                            <body name="LANKLEp" pos="0 -0.14 0" euler="0.0029502 0 0">
-                                <inertial pos="-0.0035 0 0" mass="0.00289"
-                                        diaginertia="3.48e-08 3.48e-08 3.48e-08"/>
-                                <joint name="LANKLEp" axis="-1 0 0" range="-1.04 0.06"/>
-                                <geom type="mesh" mesh="LANKLEp" class="visual" rgba="0.78 0.76 0.74 1"/>
-                                <geom type="mesh" mesh="LANKLEp" class="collision"/>
-
-
-                                <body name="LANKLEy" pos="0 0 0" euler="0 0 -0.017993">
-                                    <inertial pos="-0.00350 -0.01748 -0.02440" mass="0.02488"
-                                              diaginertia="6.08e-06 5.08e-06 1.18e-06"/>
-                                    <geom type="mesh" mesh="LANKLEy" class="visual" rgba="0.79 0.82 0.93 1"/>
-                                    <geom type="mesh" mesh="LANKLEy" class="collision"/>
-                                </body>
-                            </body>
-                        </body>
+                    <body name="LKNEEp" pos="-0.0095 -0.13992 3.69925e-06" quat="1 0 0.000528492 0">
+                        <inertial pos="0.0210964 -0.0166308 -0.108848" quat="0.988066 0.0703598 -0.136785 0.00799826" mass="0.345212" diaginertia="0.00208683 0.00208399 8.5348e-05"/>
+                        <joint name="LKNEEp" pos="0 0 0" axis="1 0 0" range="-2.3 0.29"/>
+                        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LKNEEp"/>
+                        <geom type="mesh" mesh="LKNEEp" class="collision"/>
+                        <!-- L_Feet (fixed) -->
+                        <geom pos="0 -0.162395 0" quat="1 0 0 0" type="mesh" rgba="1 1 1 1" mesh="L_Feet"/>
+                        <geom pos="0 -0.162395 0" quat="1 0 0 0" type="mesh" mesh="L_Feet" class="collision"/>
                     </body>
                 </body>
             </body>
@@ -277,36 +173,26 @@
     </worldbody>
 
     <contact>
-
     </contact>
 
     <actuator>
-
-
+        <!-- Waist -->
         <position name="Waist_2" joint="Waist_2" kp="1000" kv="100" forcerange="-1000 1000"/>
-
+        <!-- Right Arm -->
         <position name="RSDp" joint="RSDp" kp="150" kv="15" forcerange="-150 150"/>
         <position name="RSDy" joint="RSDy" kp="150" kv="15" forcerange="-150 150"/>
         <position name="RARMp" joint="RARMp" kp="150" kv="15" forcerange="-150 150"/>
-        <position name="RARMAP" joint="RARMAP" kp="150" kv="15" forcerange="-150 150"/>
-
+        <!-- Left Arm -->
         <position name="LSDp" joint="LSDp" kp="150" kv="15" forcerange="-150 150"/>
         <position name="LSDy" joint="LSDy" kp="150" kv="15" forcerange="-150 150"/>
         <position name="LARMp" joint="LARMp" kp="150" kv="15" forcerange="-150 150"/>
-        <position name="LARMAp" joint="LARMAp" kp="150" kv="15" forcerange="-150 150"/>
-
+        <!-- Right Leg -->
         <position name="RHIPp" joint="RHIPp" kp="150" kv="15" forcerange="-150 150"/>
         <position name="RHIPy" joint="RHIPy" kp="150" kv="15" forcerange="-150 150"/>
         <position name="RKNEEP" joint="RKNEEP" kp="150" kv="15" forcerange="-150 150"/>
-        <position name="RANKLEp" joint="RANKLEp" kp="120" kv="12" forcerange="-120 120"/>
-
+        <!-- Left Leg -->
         <position name="LHIPp" joint="LHIPp" kp="150" kv="15" forcerange="-150 150"/>
         <position name="LHIPy" joint="LHIPy" kp="150" kv="15" forcerange="-150 150"/>
         <position name="LKNEEp" joint="LKNEEp" kp="150" kv="15" forcerange="-150 150"/>
-        <position name="LANKLEp" joint="LANKLEp" kp="120" kv="12" forcerange="-120 120"/>
     </actuator>
-
-    <sensor>
-        <jointpos name="qpos_all" joint="Waist_2"/>
-    </sensor>
 </mujoco>

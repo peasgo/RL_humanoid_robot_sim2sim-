@@ -150,10 +150,10 @@ def main(env_cfg, agent_cfg):
     # Per-joint action jitter
     print(f"\nPer-joint action jitter (std of consecutive diffs):")
     joint_names_action = [
-        "RSDp", "RSDy", "RARMp", "RARMAP",
-        "LSDp", "LSDy", "LARMp", "LARMAp",
-        "RHIPp", "RHIPy", "RKNEEP", "RANKLEp",
-        "LHIPp", "LHIPy", "LKNEEp", "LANKLEp",
+        "RSDp", "RSDy", "RARMp",
+        "LSDp", "LSDy", "LARMp",
+        "RHIPp", "RHIPy", "RKNEEP",
+        "LHIPp", "LHIPy", "LKNEEp",
     ]
     for j in range(min(len(joint_names_action), actions_history.shape[1])):
         jdiff = action_diffs[:, j]
@@ -165,7 +165,7 @@ def main(env_cfg, agent_cfg):
     # 4. Joint velocity analysis (from obs)
     print(f"\nJoint position oscillation (std of joint_pos over last 200 steps):")
     last_jpos = joint_positions[-200:]
-    for j in range(min(17, joint_positions.shape[1])):
+    for j in range(min(13, joint_positions.shape[1])):
         std = np.std(last_jpos[:, j])
         print(f"  Joint {j:2d}: std={std:.5f}")
 

@@ -1,0 +1,107 @@
+<mujoco model="DOG_V5">
+  <compiler angle="radian"/>
+
+  <asset>
+    <mesh name="base_link" file="base_link.STL"/>
+    <mesh name="Waist" file="Waist.STL"/>
+    <mesh name="Waist_2" file="Waist_2.STL"/>
+    <mesh name="RSDp" file="RSDp.STL"/>
+    <mesh name="RSDy" file="RSDy.STL"/>
+    <mesh name="RSDr" file="RSDr.STL"/>
+    <mesh name="RARMp" file="RARMp.STL"/>
+    <mesh name="R_ARM_feet" file="R_ARM_feet.STL"/>
+    <mesh name="LSDp" file="LSDp.STL"/>
+    <mesh name="LSDy" file="LSDy.STL"/>
+    <mesh name="LSDr" file="LSDr.STL"/>
+    <mesh name="LARMp" file="LARMp.STL"/>
+    <mesh name="L_arm_feet" file="L_arm_feet.STL"/>
+    <mesh name="RHIPp" file="RHIPp.STL"/>
+    <mesh name="RHIPy" file="RHIPy.STL"/>
+    <mesh name="RHIPr" file="RHIPr.STL"/>
+    <mesh name="RKNEEP" file="RKNEEP.STL"/>
+    <mesh name="R_Feet" file="R_Feet.STL"/>
+    <mesh name="LHIPp" file="LHIPp.STL"/>
+    <mesh name="LHIPy" file="LHIPy.STL"/>
+    <mesh name="LHIPr" file="LHIPr.STL"/>
+    <mesh name="LKNEEp" file="LKNEEp.STL"/>
+    <mesh name="L_Feet" file="L_Feet.STL"/>
+  </asset>
+
+  <worldbody>
+    <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="base_link"/>
+    <geom pos="0.00275 0.02161 0.04211" quat="0.707107 0.707107 0 0" type="mesh" rgba="1 1 1 1" mesh="Waist"/>
+    <body name="Waist_2" pos="0.00491482 -0.0275937 0.026256" quat="-0.00105015 0.00105015 0.707106 0.707106">
+      <inertial pos="0.002765 0.196357 0.0254714" quat="0.0131414 0.723502 0.0112021 0.690106" mass="2.2727" diaginertia="0.00628782 0.00449622 0.00331098"/>
+      <joint name="Waist_2" pos="0 0 0" axis="-0.00297028 -0.999996 0" range="-6.3 6.3"/>
+      <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="Waist_2"/>
+      <body name="RSDp" pos="-0.12555 0.18104 0.039621" quat="-0.0267098 0.00245595 0.998995 0.0359158">
+        <inertial pos="-0.0178691 -0.0245377 -0.00594363" quat="0.76001 -0.09523 -0.0619561 0.639904" mass="0.0478541" diaginertia="1.45327e-05 1.37801e-05 4.06418e-06"/>
+        <joint name="RSDp" pos="0 0 0" axis="1 0 0" range="-1.57 1.57"/>
+        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RSDp"/>
+        <body name="RSDy">
+          <inertial pos="0.00970265 -0.114224 -0.0065645" quat="0.736874 0.649887 0.172037 -0.071181" mass="0.325391" diaginertia="0.000115081 0.000113439 2.40191e-05"/>
+          <joint name="RSDy" pos="0 0 0" axis="0 0.0717638 -0.997422" range="-1.4 0.14"/>
+          <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RSDy"/>
+          <geom pos="-0.0111951 -0.0103012 0.00605837" quat="-0.000704554 0.0178668 -0.999076 -0.0390707" type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RSDr"/>
+          <body name="RARMp" pos="-0.00171928 -0.149644 -0.00396582" quat="-7.47079e-09 1.71101e-07 -0.999355 -0.035905">
+            <inertial pos="0.0212651 -0.00620283 -0.109581" quat="0.984029 0.117426 -0.13368 -0.00534131" mass="0.345212" diaginertia="0.00218453 0.00218155 8.54767e-05"/>
+            <joint name="RARMp" pos="0 0 0" axis="1 0 0" range="-2.3 0.29"/>
+            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RARMp"/>
+            <geom pos="0 -0.1635 0" quat="-0.0267809 0 -0.999641 0" type="mesh" rgba="1 1 1 1" mesh="R_ARM_feet"/>
+          </body>
+        </body>
+      </body>
+      <body name="LSDp" pos="0.120017 0.17091 0.0197305" quat="-0.0262525 0.000294739 0.999655 7.1496e-05">
+        <inertial pos="0.00532159 -0.0161946 -0.0114893" quat="0.645694 0.0386131 0.12288 0.752654" mass="0.0454989" diaginertia="1.44832e-05 1.36849e-05 4.00807e-06"/>
+        <joint name="LSDp" pos="0 0 0" axis="0.999997 0.00238067 -0.00105698" range="-1.57 1.57"/>
+        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LSDp"/>
+        <body name="LSDy">
+          <inertial pos="-0.019762 -0.123889 -0.00818481" quat="0.735176 0.656644 -0.150412 0.0755714" mass="0.332184" diaginertia="0.000161788 0.000159719 2.4202e-05"/>
+          <joint name="LSDy" pos="0 0 0" axis="-0.00105698 0 -0.999999" range="-0.14 1.4"/>
+          <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LSDy"/>
+          <geom pos="-0.011212 0.00962608 0.00678894" quat="-0.000528151 1.89755e-05 0.999355 0.035905" type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LSDr"/>
+          <body name="LARMp" pos="-0.006 -0.13992 0" quat="-0.000528492 0 1 0">
+            <inertial pos="0.0263637 -0.00618436 -0.107338" quat="0.986977 0.120879 -0.074086 -0.0760047" mass="0.350241" diaginertia="0.00212368 0.0021204 8.55509e-05"/>
+            <joint name="LARMp" pos="0 0 0" axis="-1 0 0" range="-0.29 2.3"/>
+            <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LARMp"/>
+            <geom pos="0 -0.16248 0" quat="0.0267809 9.65436e-12 0.999641 0" type="mesh" rgba="1 1 1 1" mesh="L_arm_feet"/>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="RHIPp" pos="0.06515 0.0068119 0.0095357" quat="0.73203 0.681273 0 0">
+      <inertial pos="-0.0178691 -0.0245377 -0.00594363" quat="0.76001 -0.09523 -0.0619561 0.639904" mass="0.0478541" diaginertia="1.45327e-05 1.37801e-05 4.06418e-06"/>
+      <joint name="RHIPp" pos="0 0 0" axis="-1 0 0" range="-1.57 1.57"/>
+      <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RHIPp"/>
+      <body name="RHIPy">
+        <inertial pos="-0.00524076 -0.118266 -0.00672984" quat="0.71419 0.651381 -0.183412 0.178873" mass="0.332184" diaginertia="0.000122717 0.000119904 2.41492e-05"/>
+        <joint name="RHIPy" pos="0 0 0" axis="0 0.0717638 -0.997422" range="-1.4 0.14"/>
+        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RHIPy"/>
+        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RHIPr"/>
+        <body name="RKNEEP" pos="-0.00521918 -0.149648 -0.00396608" quat="0.999355 0.035905 0 0">
+          <inertial pos="0.0265175 -0.00611377 -0.108004" quat="0.987005 0.120504 -0.0743062 -0.0760154" mass="0.350241" diaginertia="0.00214923 0.00214596 8.55506e-05"/>
+          <joint name="RKNEEP" pos="0 0 0" axis="-1 0 0" range="-0.29 2.3"/>
+          <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="RKNEEP"/>
+          <geom pos="0 -0.1635 0" quat="1 0 0 0" type="mesh" rgba="1 1 1 1" mesh="R_Feet"/>
+        </body>
+      </body>
+    </body>
+    <body name="LHIPp" pos="-0.0544468 0.000100017 0.000132238" quat="0.707107 0.707106 0.000467994 -0.00121539">
+      <inertial pos="0.00532159 -0.0161946 -0.0114893" quat="0.645694 0.0386131 0.12288 0.752654" mass="0.0454989" diaginertia="1.44832e-05 1.36849e-05 4.00807e-06"/>
+      <joint name="LHIPp" pos="0 0 0" axis="0.999997 0.00238067 -0.00105698" range="-1.57 1.57"/>
+      <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LHIPp"/>
+      <body name="LHIPy">
+        <inertial pos="-0.00511853 -0.108378 -0.00580023" quat="0.732495 0.62532 0.189311 -0.191278" mass="0.325391" diaginertia="0.000121257 0.000118421 2.40448e-05"/>
+        <joint name="LHIPy" pos="0 0 0" axis="-0.00105698 0 -0.999999" range="-0.14 1.4"/>
+        <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LHIPy"/>
+        <geom pos="0 0 0" quat="0.999835 -0.00318308 0.000465814 -0.0178789" type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LHIPr"/>
+        <body name="LKNEEp" pos="-0.0095 -0.13992 3.69925e-06" quat="1 0 0.000528492 0">
+          <inertial pos="0.0210964 -0.0166308 -0.108848" quat="0.988066 0.0703598 -0.136785 0.00799826" mass="0.345212" diaginertia="0.00208683 0.00208399 8.5348e-05"/>
+          <joint name="LKNEEp" pos="0 0 0" axis="1 0 0" range="-2.3 0.29"/>
+          <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="LKNEEp"/>
+          <geom pos="0 -0.162395 0" quat="1 0 0 0" type="mesh" rgba="1 1 1 1" mesh="L_Feet"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

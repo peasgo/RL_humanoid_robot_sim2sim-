@@ -30,13 +30,6 @@ import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 from isaaclab_assets.robots.v4_quadruped import V4_QUADRUPED_CFG
 
 
-# ============================================================
-# V4 坐标系适配函数
-# V4 机器人 body frame: X=左右, Y=上下(重力方向), Z=前后
-# Isaac Sim world frame: X=前后, Y=左右, Z=上下
-# rot=(0.7071, 0.7071, 0, 0) 即绕X轴旋转90度
-# body_x -> world_x, body_y -> world_z, body_z -> world_-y
-# ============================================================
 
 def v4_base_lin_vel(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: RigidObject = env.scene[asset_cfg.name]
@@ -299,7 +292,7 @@ class V4QuadrupedSceneCfg(InteractiveSceneCfg):
 
 
 # ============================================================
-# 命令配置 - 只走直线，不转弯
+# 命令配置 - 前后直线走，不转弯
 # ============================================================
 
 @configclass
@@ -308,12 +301,12 @@ class CommandsCfg:
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(10.0, 10.0),
-        rel_standing_envs=0.02,
+        rel_standing_envs=0.1,
         rel_heading_envs=0.0,
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(0.3, 0.8),     # 只前进
+            lin_vel_x=(-0.8, 0.8),    # 前后都能走
             lin_vel_y=(0.0, 0.0),     # 不侧移
             ang_vel_z=(0.0, 0.0),     # 不转弯
         ),
@@ -415,8 +408,8 @@ class EventCfg:
         mode="reset",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
-            "force_range": (0.0, 0.0),
-            "torque_range": (-0.0, 0.0),
+            "force_range": (-5.0, 5.0),
+            "torque_range": (-1.0, 1.0),
         },
     )
 
@@ -440,8 +433,8 @@ class EventCfg:
         func=mdp.reset_joints_by_offset,
         mode="reset",
         params={
-            "position_range": (0.0, 0.0),
-            "velocity_range": (0.0, 0.0),
+            "position_range": (-0.1, 0.1),
+            "velocity_range": (-0.5, 0.5),
         },
     )
 
@@ -456,8 +449,8 @@ class EventCfg:
     push_robot = EventTerm(
         func=mdp.push_by_setting_velocity,
         mode="interval",
-        interval_range_s=(10.0, 15.0),
-        params={"velocity_range": {"x": (-0.3, 0.3), "y": (-0.3, 0.3)}},
+        interval_range_s=(5.0, 10.0),
+        params={"velocity_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5)}},
     )
 
 
@@ -495,7 +488,7 @@ class RewardsCfg:
     joint_acc = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
     joint_torques = RewTerm(func=mdp.joint_torques_l2, weight=-2e-4)
     action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.1)
-    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-10.0)
+    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5.0)
     energy = RewTerm(func=energy, weight=-2e-5)
 
     joint_pos = RewTerm(

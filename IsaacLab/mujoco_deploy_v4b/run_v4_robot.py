@@ -1,3 +1,7 @@
+"""
+V4 Quadruped Sim2Sim MuJoCo Deployment - DOG_V5 (12-action policy)
+Adapted for the 2026-02-15 trained policy with 13 joints / 12 actions / 47 obs.
+"""
 import time
 import mujoco.viewer
 import mujoco
@@ -19,30 +23,8 @@ def get_gravity_orientation(quaternion):
     return np.array([gx, gy, gz])
 
 
-def quat_to_rotmat_wxyz(quat_wxyz):
-    """Quaternion (w,x,y,z) -> rotation matrix."""
-    w, x, y, z = quat_wxyz
-    n = np.sqrt(w * w + x * x + y * y + z * z)
-    if n > 0:
-        w, x, y, z = w / n, x / n, y / n, z / n
-    R = np.array([
-        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
-        [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
-        [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
-    ], dtype=np.float64)
-    return R
-
-
-def world_to_body(v_world, quat_wxyz):
-    """Rotate world-frame vector into body frame."""
-    R_wb = quat_to_rotmat_wxyz(quat_wxyz)
-    return R_wb.T @ v_world
-
-
-def v4_remap_lin_vel(lin_vel_body):
-    return np.array([lin_vel_body[2], lin_vel_body[0], lin_vel_body[1]])
-
-
+# V4 coordinate remap functions (Isaac body frame -> standard frame)
+# V4 URDF: forward=body_z, lateral=body_x, vertical=body_y
 def v4_remap_ang_vel(ang_vel_body):
     return np.array([ang_vel_body[0], ang_vel_body[2], ang_vel_body[1]])
 
@@ -101,13 +83,13 @@ class KeyboardController:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="V4 Quadruped Sim2Sim MuJoCo Deployment (v4b)")
+    parser = argparse.ArgumentParser(description="V4 Quadruped Sim2Sim - DOG_V5 (12-action)")
     parser.add_argument("config_file", type=str, help="config file name (e.g., v4_robot.yaml)")
     parser.add_argument("--no-policy", action="store_true", help="Disable policy, only PD hold default stance")
     parser.add_argument("--no-keyboard", action="store_true", help="Disable keyboard control")
     args = parser.parse_args()
 
-
+    # Load config
     current_dir = os.path.dirname(os.path.abspath(__file__))
     potential_paths = [
         os.path.join(current_dir, args.config_file),
@@ -130,7 +112,6 @@ if __name__ == "__main__":
         policy_path = config["policy_path"]
         xml_path = config["xml_path"]
 
-
         if not os.path.isabs(xml_path):
             xml_path = os.path.join(current_dir, xml_path)
 
@@ -138,45 +119,25 @@ if __name__ == "__main__":
         simulation_dt = config["simulation_dt"]
         control_decimation = config["control_decimation"]
 
-
         kps = np.array(config["kps"], dtype=np.float32)
         kds = np.array(config["kds"], dtype=np.float32)
         default_angles = np.array(config["default_angles"], dtype=np.float32)
 
         ang_vel_scale = config["ang_vel_scale"]
-        lin_vel_scale = config["lin_vel_scale"]
         dof_pos_scale = config["dof_pos_scale"]
         dof_vel_scale = config["dof_vel_scale"]
         action_scale = config["action_scale"]
         cmd_scale = np.array(config["cmd_scale"], dtype=np.float32)
-
-        use_tanh_action = bool(config.get("use_tanh_action", False))
-        action_clip = config.get("action_clip", None)
-        if action_clip is not None:
-            action_clip = float(action_clip)
-
-
-        action_filter_alpha = float(config.get("action_filter_alpha", 0.0))
-
-
-        obs_filter_alpha = float(config.get("obs_filter_alpha", 0.0))
-        obs_filter_mode = str(config.get("obs_filter_mode", "all"))
-
-
-        action_ramp_steps = int(config.get("action_ramp_steps", 0))
 
         dq_sign_fixes_cfg = config.get("dq_sign_fixes", None)
         num_actions = config["num_actions"]
         num_obs = config["num_obs"]
         cmd = np.array(config["cmd_init"], dtype=np.float32)
 
-
         v4_coordinate_remap = config.get("v4_coordinate_remap", False)
-
-
         mass_scale = float(config.get("mass_scale", 1.0))
 
-
+    # Load MuJoCo model
     if not os.path.exists(xml_path):
         raise FileNotFoundError(f"XML file not found: {xml_path}")
 
@@ -185,7 +146,7 @@ if __name__ == "__main__":
     d = mujoco.MjData(m)
     m.opt.timestep = simulation_dt
 
-
+    # Mass scaling
     if mass_scale != 1.0:
         original_mass = sum(m.body_mass[bi] for bi in range(m.nbody))
         for bi in range(m.nbody):
@@ -194,7 +155,7 @@ if __name__ == "__main__":
         scaled_mass = sum(m.body_mass[bi] for bi in range(m.nbody))
         print(f"Mass scaling: {mass_scale}x  ({original_mass:.3f}kg -> {scaled_mass:.3f}kg)")
 
-
+    # Get MuJoCo joint names (non-free joints)
     mj_joint_names = []
     for jid in range(m.njnt):
         jname = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, jid)
@@ -204,7 +165,7 @@ if __name__ == "__main__":
     num_mj_joints = len(mj_joint_names)
     print(f"MuJoCo joint order ({num_mj_joints} joints): {mj_joint_names}")
 
-
+    # Actuator -> joint index mapping
     actuator_to_joint_indices = []
     for i in range(m.nu):
         joint_id = m.actuator_trnid[i, 0]
@@ -213,108 +174,80 @@ if __name__ == "__main__":
         actuator_to_joint_indices.append(pd_index)
     actuator_to_joint_indices = np.array(actuator_to_joint_indices, dtype=np.int32)
 
-
-    init_height = float(config.get("init_height", 0.22))
-    d.qpos[2] = init_height
-    d.qpos[3:7] = [0.70710678, 0.70710678, 0.0, 0.0]
-    d.qpos[7:] = default_angles
-
-
-    warmup_steps = int(5.0 / simulation_dt)
-
-
-    isaac17_joint_order = [
-        'LHIPp',
-        'RHIPp',
-        'LHIPy',
-        'RHIPy',
+    # ============================================================
+    # Isaac joint ordering (from training env)
+    # ============================================================
+    # Isaac 13-joint order (all joints including Waist_2, for observations):
+    # This is the PhysX articulation DOF order (BFS-like traversal).
+    # Verified by running scripts/print_joint_order.py --headless
+    isaac13_joint_order = [
+        'LHIPp', 'RHIPp', 'LHIPy', 'RHIPy',
         'Waist_2',
-        'LSDp',
-        'RSDp',
-        'LKNEEp',
-        'RKNEEP',
-        'LSDy',
-        'RSDy',
-        'LANKLEp',
-        'RANKLEp',
-        'LARMp',
-        'RARMp',
-        'LARMAp',
-        'RARMAP',
+        'LSDp', 'RSDp', 'LKNEEp', 'RKNEEP',
+        'LSDy', 'RSDy', 'LARMp', 'RARMp',
     ]
 
-
-    isaac16_action_order = [
-        'LHIPp',
-        'RHIPp',
-        'LHIPy',
-        'RHIPy',
-        'LSDp',
-        'RSDp',
-        'LKNEEp',
-        'RKNEEP',
-        'LSDy',
-        'RSDy',
-        'LANKLEp',
-        'RANKLEp',
-        'LARMp',
-        'RARMp',
-        'LARMAp',
-        'RARMAP',
+    # Isaac 12-action order: find_joints() uses preserve_order=False by default,
+    # so actions are returned in PhysX DOF order (not ActionsCfg list order).
+    # This is isaac13_joint_order minus Waist_2.
+    isaac12_action_order = [
+        'LHIPp', 'RHIPp', 'LHIPy', 'RHIPy',
+        'LSDp', 'RSDp', 'LKNEEp', 'RKNEEP',
+        'LSDy', 'RSDy', 'LARMp', 'RARMp',
     ]
 
-    print(f"Isaac17 joint order ({len(isaac17_joint_order)} joints): {isaac17_joint_order}")
-    print(f"Isaac16 action order ({len(isaac16_action_order)} joints): {isaac16_action_order}")
+    print(f"Isaac13 joint order ({len(isaac13_joint_order)} joints): {isaac13_joint_order}")
+    print(f"Isaac12 action order ({len(isaac12_action_order)} joints): {isaac12_action_order}")
 
-
-    for jname in isaac17_joint_order:
+    # Validate all joints exist in MuJoCo
+    for jname in isaac13_joint_order:
         if jname not in mj_joint_names:
             raise ValueError(f"Joint '{jname}' not found in MuJoCo model. Available: {mj_joint_names}")
 
-
-    isaac17_to_mujoco17 = np.array(
-        [mj_joint_names.index(jname) for jname in isaac17_joint_order],
+    # Mapping: Isaac13 index -> MuJoCo joint index (for observations)
+    isaac13_to_mujoco = np.array(
+        [mj_joint_names.index(jname) for jname in isaac13_joint_order],
         dtype=np.int32
     )
 
-    print(f"\nMapping 1 - Isaac17 <-> MuJoCo17 (for obs):")
-    print(f"  isaac17_to_mujoco17: {isaac17_to_mujoco17}")
-    for i17, jname in enumerate(isaac17_joint_order):
-        mj_idx = isaac17_to_mujoco17[i17]
-        print(f"  Isaac17[{i17:2d}] {jname:12s} <-> MJ[{mj_idx:2d}] {mj_joint_names[mj_idx]}")
+    print(f"\nMapping - Isaac13 <-> MuJoCo (for obs):")
+    for i13, jname in enumerate(isaac13_joint_order):
+        mj_idx = isaac13_to_mujoco[i13]
+        print(f"  Isaac13[{i13:2d}] {jname:12s} <-> MJ[{mj_idx:2d}] {mj_joint_names[mj_idx]}")
 
-
-    isaac16_action_to_mj17 = np.array(
-        [mj_joint_names.index(jname) for jname in isaac16_action_order],
+    # Mapping: Isaac12 action index -> MuJoCo joint index (for actions)
+    isaac12_action_to_mj = np.array(
+        [mj_joint_names.index(jname) for jname in isaac12_action_order],
         dtype=np.int32
     )
 
-    print(f"\nMapping 2 - Isaac16 <-> MuJoCo17 (for action):")
-    print(f"  isaac16_action_to_mj17: {isaac16_action_to_mj17}")
-    for i16, jname in enumerate(isaac16_action_order):
-        mj_idx = isaac16_action_to_mj17[i16]
-        print(f"  Isaac16[{i16:2d}] {jname:12s} -> MJ[{mj_idx:2d}] {mj_joint_names[mj_idx]}")
+    print(f"\nMapping - Isaac12 <-> MuJoCo (for action):")
+    for i12, jname in enumerate(isaac12_action_order):
+        mj_idx = isaac12_action_to_mj[i12]
+        print(f"  Isaac12[{i12:2d}] {jname:12s} -> MJ[{mj_idx:2d}] {mj_joint_names[mj_idx]}")
 
-
+    # Waist_2 locked at default
     waist_mj_idx = mj_joint_names.index('Waist_2')
     waist_default = default_angles[waist_mj_idx]
     print(f"\nWaist_2: MJ idx={waist_mj_idx}, locked at {waist_default:.4f} rad")
 
-
-    dq_sign = np.ones(len(isaac17_joint_order), dtype=np.float32)
+    # dq sign fixes
+    dq_sign = np.ones(len(isaac13_joint_order), dtype=np.float32)
     if isinstance(dq_sign_fixes_cfg, dict):
         for jn, s in dq_sign_fixes_cfg.items():
-            if jn in isaac17_joint_order:
-                dq_sign[isaac17_joint_order.index(jn)] = float(s)
+            if jn in isaac13_joint_order:
+                dq_sign[isaac13_joint_order.index(jn)] = float(s)
 
-
+    # Joint limits
     joint_limits = {}
     for i, jname in enumerate(mj_joint_names):
         jid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, jname)
         if m.jnt_limited[jid]:
             joint_limits[jname] = (float(m.jnt_range[jid, 0]), float(m.jnt_range[jid, 1]))
 
-
+    # ============================================================
+    # Load policy
+    # ============================================================
     policy = None
     if args.no_policy:
         print("\n--no-policy flag set. Running in STANCE MODE (PD hold only, no policy).")
@@ -325,25 +258,29 @@ if __name__ == "__main__":
     else:
         print(f"\nWARNING: No policy found at {policy_path}. Running in DEBUG MODE.")
 
-
-    action_isaac16_raw = np.zeros(num_actions, dtype=np.float32)
-    action_isaac16_exec = np.zeros(num_actions, dtype=np.float32)
-    action_isaac16_prev = np.zeros(num_actions, dtype=np.float32)
-    prev_obs = np.zeros(num_obs, dtype=np.float32)
+    # ============================================================
+    # Initialize state
+    # ============================================================
+    action_raw = np.zeros(num_actions, dtype=np.float32)
     target_dof_pos = default_angles.copy()
     obs = np.zeros(num_obs, dtype=np.float32)
     counter = 0
-    policy_step_count = 0
+
+    # Set initial pose
+    init_height = float(config.get("init_height", 0.27))
+    d.qpos[2] = init_height
+    d.qpos[3:7] = [0.70710678, 0.70710678, 0.0, 0.0]
+    d.qpos[7:] = default_angles
+
+    warmup_steps = int(5.0 / simulation_dt)
 
     print(f"\n{'='*60}")
-    print(f"V4 Quadruped Sim2Sim Configuration (v4b):")
+    print(f"V4 Quadruped Sim2Sim - DOG_V5 (12-action policy):")
     print(f"  num_actions: {num_actions}")
     print(f"  num_obs: {num_obs}")
     print(f"  action_scale: {action_scale}")
-    print(f"  action_clip: {action_clip}")
-    print(f"  action_filter_alpha: {action_filter_alpha}")
-    print(f"  obs_filter_alpha: {obs_filter_alpha} (mode={obs_filter_mode})")
-    print(f"  action_ramp_steps: {action_ramp_steps}")
+    print(f"  ang_vel_scale: {ang_vel_scale}")
+    print(f"  dof_vel_scale: {dof_vel_scale}")
     print(f"  mass_scale: {mass_scale}")
     print(f"  control_decimation: {control_decimation}")
     print(f"  simulation_dt: {simulation_dt}")
@@ -351,7 +288,7 @@ if __name__ == "__main__":
     print(f"  cmd_init: {cmd}")
     print(f"{'='*60}\n")
 
-
+    # Keyboard controller
     kb_controller = None
     if not args.no_keyboard:
         kb_controller = KeyboardController(cmd)
@@ -361,7 +298,7 @@ if __name__ == "__main__":
 
     with mujoco.viewer.launch_passive(m, d) as viewer:
 
-
+        # Warmup
         print(f"Warmup: settling for {warmup_steps * simulation_dt:.1f}s...")
         for ws in range(warmup_steps):
             d.ctrl[:] = target_dof_pos[actuator_to_joint_indices]
@@ -371,7 +308,7 @@ if __name__ == "__main__":
         viewer.sync()
         print(f"Warmup done. Height: {d.qpos[2]:.4f}m")
 
-
+        # Reset velocities after warmup
         counter = 0
         d.qvel[:] = 0
 
@@ -382,7 +319,7 @@ if __name__ == "__main__":
         while viewer.is_running() and time.time() - start < simulation_duration:
             step_start = time.time()
 
-
+            # Handle reset
             if kb_controller and kb_controller.reset_requested:
                 kb_controller.reset_requested = False
                 d.qpos[0:3] = [0, 0, init_height]
@@ -390,139 +327,100 @@ if __name__ == "__main__":
                 d.qpos[7:] = default_angles
                 d.qvel[:] = 0
                 target_dof_pos[:] = default_angles
-                action_isaac16_raw[:] = 0
-                action_isaac16_exec[:] = 0
-                action_isaac16_prev[:] = 0
-                prev_obs[:] = 0
+                action_raw[:] = 0
                 counter = 0
-                policy_step_count = 0
                 start = time.time()
                 print("\n[RESET] Robot pose reset!")
                 continue
 
-
+            # Apply PD control
             d.ctrl[:] = target_dof_pos[actuator_to_joint_indices]
 
-
+            # Step simulation
             mujoco.mj_step(m, d)
             counter += 1
 
-
+            # Render
             if counter % render_interval == 0:
                 viewer.sync()
 
-
+            # Policy step
             if counter % control_decimation == 0 and policy is not None:
                 quat = d.qpos[3:7]
-                base_lin_vel_world = d.qvel[0:3].copy()
-                base_ang_vel_world = d.qvel[3:6].copy()
 
+                # MuJoCo free joint qvel[3:6] is already in body (local) frame
+                omega = d.qvel[3:6].copy()
 
-                base_lin_vel = world_to_body(base_lin_vel_world, quat)
-
-
-                omega = world_to_body(base_ang_vel_world, quat)
-
-
+                # Joint positions and velocities (MuJoCo order)
                 qj_mujoco = d.qpos[7:].copy()
                 dqj_mujoco = d.qvel[6:].copy()
 
+                # Remap to Isaac13 order
+                qj_isaac13 = qj_mujoco[isaac13_to_mujoco]
+                dqj_isaac13 = dqj_mujoco[isaac13_to_mujoco] * dq_sign
 
-                qj_isaac17 = qj_mujoco[isaac17_to_mujoco17]
-                dqj_isaac17 = dqj_mujoco[isaac17_to_mujoco17] * dq_sign
+                # Default angles in Isaac13 order
+                default_angles_isaac13 = default_angles[isaac13_to_mujoco]
 
-
-                default_angles_isaac17 = default_angles[isaac17_to_mujoco17]
-
-
+                # Gravity orientation
                 gravity_orientation = get_gravity_orientation(quat)
 
-
+                # V4 coordinate remap
                 if v4_coordinate_remap:
-                    base_lin_vel_obs = v4_remap_lin_vel(base_lin_vel)
                     omega_obs = v4_remap_ang_vel(omega)
                     gravity_obs = v4_remap_gravity(gravity_orientation)
                 else:
-                    base_lin_vel_obs = base_lin_vel
                     omega_obs = omega
                     gravity_obs = gravity_orientation
 
-
-                base_lin_vel_obs = base_lin_vel_obs * lin_vel_scale
+                # Scale observations
                 omega_obs = omega_obs * ang_vel_scale
-                qj = (qj_isaac17 - default_angles_isaac17) * dof_pos_scale
-                dqj = dqj_isaac17 * dof_vel_scale
+                qj = (qj_isaac13 - default_angles_isaac13) * dof_pos_scale
+                dqj = dqj_isaac13 * dof_vel_scale
 
+                # Build observation vector (47 dims):
+                # [0:3]   ang_vel (3)
+                # [3:6]   projected_gravity (3)
+                # [6:9]   velocity_commands (3)
+                # [9:22]  joint_pos_rel (13)
+                # [22:35] joint_vel_rel (13)
+                # [35:47] last_action (12)
+                obs[0:3] = omega_obs
+                obs[3:6] = gravity_obs
+                obs[6:9] = cmd * cmd_scale
+                obs[9:22] = qj
+                obs[22:35] = dqj
+                obs[35:47] = action_raw.astype(np.float32)
 
-                obs[0:3] = base_lin_vel_obs
-                obs[3:6] = omega_obs
-                obs[6:9] = gravity_obs
-                obs[9:12] = cmd * cmd_scale
-                obs[12:29] = qj
-                obs[29:46] = dqj
-                obs[46:62] = action_isaac16_raw.astype(np.float32)
-
-
-                if obs_filter_alpha > 0 and policy_step_count > 0:
-                    if obs_filter_mode == "vel_only":
-                        obs[0:6] = obs_filter_alpha * prev_obs[0:6] + (1.0 - obs_filter_alpha) * obs[0:6]
-                        obs[29:46] = obs_filter_alpha * prev_obs[29:46] + (1.0 - obs_filter_alpha) * obs[29:46]
-                    else:
-                        obs[:] = obs_filter_alpha * prev_obs + (1.0 - obs_filter_alpha) * obs
-                prev_obs[:] = obs
-
-
+                # Debug print
                 t_now = time.time() - start
                 if t_now - last_print_time >= 2.0:
                     last_print_time = t_now
                     pos = d.qpos[0:3]
                     print(f"[t={t_now:5.1f}s] h={pos[2]:.3f}m pos=({pos[0]:+.2f},{pos[1]:+.2f}) "
                           f"cmd=({cmd[0]:+.2f},{cmd[1]:+.2f},{cmd[2]:+.2f}) "
-                          f"ncon={d.ncon} act_max={np.max(np.abs(action_isaac16_exec)):.2f}")
-                    print(f"  obs: lin_vel={obs[0:3]} ang_vel={obs[3:6]}")
-                    print(f"  obs: gravity={obs[6:9]} cmd_obs={obs[9:12]}")
-                    print(f"  obs: qj_rel[:4]={obs[12:16]} dqj[:4]={obs[29:33]}")
-                    print(f"  base_vel_world={base_lin_vel_world} base_vel_body={base_lin_vel}")
+                          f"ncon={d.ncon} act_max={np.max(np.abs(action_raw)):.2f}")
+                    print(f"  obs: ang_vel={obs[0:3]} gravity={obs[3:6]} cmd_obs={obs[6:9]}")
+                    print(f"  obs: qj_rel[:4]={obs[9:13]} dqj[:4]={obs[22:26]}")
 
-
+                # Run policy
                 obs_tensor = torch.from_numpy(obs).unsqueeze(0)
-                action_isaac16_raw = policy(obs_tensor).detach().numpy().squeeze()
+                action_raw = policy(obs_tensor).detach().numpy().squeeze()
 
-
-                if use_tanh_action:
-                    action_isaac16_raw = np.tanh(action_isaac16_raw)
-                if action_clip is not None:
-                    action_isaac16_raw = np.clip(action_isaac16_raw, -action_clip, action_clip)
-
-
-                action_isaac16_exec = action_isaac16_raw.copy()
-
-
-                if action_ramp_steps > 0 and policy_step_count < action_ramp_steps:
-                    ramp_factor = float(policy_step_count) / float(action_ramp_steps)
-                    action_isaac16_exec = action_isaac16_exec * ramp_factor
-
-
-                if action_filter_alpha > 0:
-                    action_isaac16_exec = action_filter_alpha * action_isaac16_prev + (1.0 - action_filter_alpha) * action_isaac16_exec
-                action_isaac16_prev[:] = action_isaac16_exec
-
-                policy_step_count += 1
-
-
+                # Apply actions: lock Waist_2, set 12 action joints
                 target_dof_pos[waist_mj_idx] = waist_default
 
-                for i16 in range(num_actions):
-                    mj_idx = isaac16_action_to_mj17[i16]
-                    target_dof_pos[mj_idx] = action_isaac16_exec[i16] * action_scale + default_angles[mj_idx]
+                for i12 in range(num_actions):
+                    mj_idx = isaac12_action_to_mj[i12]
+                    target_dof_pos[mj_idx] = action_raw[i12] * action_scale + default_angles[mj_idx]
 
-
+                # Enforce joint limits
                 for i, jname in enumerate(mj_joint_names):
                     if jname in joint_limits:
                         low, high = joint_limits[jname]
                         target_dof_pos[i] = np.clip(target_dof_pos[i], low, high)
 
-
+            # Real-time sync
             time_until_next_step = m.opt.timestep - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)

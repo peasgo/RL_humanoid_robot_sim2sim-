@@ -24,7 +24,7 @@ V4_QUADRUPED_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.27),
+        pos=(0.0, 0.0, 0.3),
         rot=(0.7071, 0.7071, 0.0, 0.0),
         joint_pos={
             "Waist_2": 3.14159,  # 上半身完全前倾 ≈π
