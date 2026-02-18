@@ -1,0 +1,138 @@
+# ============================================================
+# V4 Quadruped Sim2Real 部署配置
+# 基于 mujoco_deploy_v4b 的 v4_robot.yaml
+# ============================================================
+
+# 策略文件路径 (训练导出的 TorchScript .pt 文件)
+policy_path: "/home/rl/RL-human_robot/IsaacLab/logs/rsl_rl/v4_quadruped_flat/2026-02-15_03-51-01/exported/policy.pt"
+
+# ============================================================
+# 控制参数 (必须与训练环境一致)
+# ============================================================
+simulation_dt: 0.005          # Isaac Lab 仿真步长
+control_decimation: 4         # 每4个仿真步执行一次策略 => 控制频率 = 1/(0.005*4) = 50Hz
+control_dt: 0.02              # = simulation_dt * control_decimation = 20ms
+
+# ============================================================
+# PD 增益 (与训练环境 ImplicitActuatorCfg 一致)
+# 顺序: Isaac12 action order (PhysX DOF order, 不含 Waist_2)
+# LHIPp, RHIPp, LHIPy, RHIPy, LSDp, RSDp, LKNEEp, RKNEEP, LSDy, RSDy, LARMp, RARMp
+# ============================================================
+kps_isaac12: [150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150]
+kds_isaac12: [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15]
+
+# Waist_2 单独控制 (锁定在默认位置)
+kp_waist: 1000
+kd_waist: 100
+
+# ============================================================
+# 默认关节角度 (弧度)
+# Isaac13 joint order (PhysX DOF order):
+# [0]  LHIPp   = -0.78
+# [1]  RHIPp   =  0.78
+# [2]  LHIPy   =  0.0
+# [3]  RHIPy   =  0.0
+# [4]  Waist_2 =  3.14159
+# [5]  LSDp    =  0.6
+# [6]  RSDp    =  0.6
+# [7]  LKNEEp  = -1.0
+# [8]  RKNEEP  =  1.0
+# [9]  LSDy    =  0.0
+# [10] RSDy    =  0.0
+# [11] LARMp   =  1.4
+# [12] RARMp   = -1.4
+# ============================================================
+default_angles_isaac13:
+  LHIPp:   -0.78
+  RHIPp:    0.78
+  LHIPy:    0.0
+  RHIPy:    0.0
+  Waist_2:  3.14159
+  LSDp:     0.6
+  RSDp:     0.6
+  LKNEEp:  -1.0
+  RKNEEP:   1.0
+  LSDy:     0.0
+  RSDy:     0.0
+  LARMp:    1.4
+  RARMp:   -1.4
+
+# ============================================================
+# 观测缩放 (必须与训练环境完全一致)
+# ============================================================
+ang_vel_scale: 0.2
+dof_pos_scale: 1.0
+dof_vel_scale: 0.05
+action_scale: 0.25
+cmd_scale: [1.0, 1.0, 1.0]
+
+# ============================================================
+# 策略维度
+# ============================================================
+num_actions: 12
+num_obs: 47
+
+# ============================================================
+# 初始速度指令
+# ============================================================
+cmd_init: [0.0, 0.0, 0.0]
+
+# ============================================================
+# V4 坐标系重映射 (必须开启, 与训练一致)
+# V4 URDF: forward=body_z, lateral=body_x, vertical=body_y
+# ============================================================
+v4_coordinate_remap: true
+
+# ============================================================
+# 安全限制
+# ============================================================
+max_action_clip: 5.0          # 裁剪策略输出的最大绝对值
+torque_limit: 150.0           # 单关节最大力矩 (N·m)
+velocity_limit: 10.0          # 单关节最大速度 (rad/s)
+
+# 关节角度限制 (弧度, 与 URDF 一致)
+joint_limits:
+  LHIPp:   [-1.57, 1.57]
+  RHIPp:   [-1.57, 1.57]
+  LHIPy:   [-0.14, 1.4]
+  RHIPy:   [-1.4, 0.14]
+  LSDp:    [-1.57, 1.57]
+  RSDp:    [-1.57, 1.57]
+  LKNEEp:  [-2.3, 0.29]
+  RKNEEP:  [-0.29, 2.3]
+  LSDy:    [-0.14, 1.4]
+  RSDy:    [-1.4, 0.14]
+  LARMp:   [-0.29, 2.3]
+  RARMp:   [-2.3, 0.29]
+  Waist_2: [-6.3, 6.3]
+
+# ============================================================
+# 硬件通信配置 (根据你的实际硬件修改)
+# ============================================================
+hardware:
+  # 通信方式: "serial" / "can" / "ethercat" / "ros2" / "custom"
+  interface: "serial"
+
+  # 串口配置 (interface=serial 时使用)
+  serial:
+    port: "/dev/ttyUSB0"
+    baudrate: 1000000
+
+  # CAN 配置 (interface=can 时使用)
+  can:
+    channel: "can0"
+    bitrate: 1000000
+
+  # ROS2 配置 (interface=ros2 时使用)
+  ros2:
+    joint_command_topic: "/v4_robot/joint_commands"
+    joint_state_topic: "/v4_robot/joint_states"
+    imu_topic: "/v4_robot/imu"
+
+  # IMU 配置
+  imu:
+    # IMU 数据来源: "embedded" (电机驱动板内置) / "external" (外部IMU)
+    source: "embedded"
+    # 外部 IMU 串口 (source=external 时使用)
+    port: "/dev/ttyUSB1"
+    baudrate: 115200
