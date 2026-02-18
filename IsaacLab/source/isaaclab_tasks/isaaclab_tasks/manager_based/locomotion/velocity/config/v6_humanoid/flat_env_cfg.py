@@ -1,9 +1,3 @@
-"""V6 Humanoid flat environment configuration.
-
-Reward structure based on Unitree G1 29DOF locomotion config from unitree_rl_lab.
-Adapted for V6 humanoid with custom coordinate frame handling.
-"""
-
 import math
 import torch
 
@@ -32,12 +26,7 @@ from isaaclab_assets.robots.v6_humanoid import V6_HUMANOID_CFG
 FEET_BODIES = ["RANKLEy", "LANKLEy"]
 
 
-# ============================================================
-# Custom reward functions (Unitree G1 style)
-# ============================================================
-
 def energy(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
-    """Penalize the energy used by the robot's joints."""
     asset: Articulation = env.scene[asset_cfg.name]
     qvel = asset.data.joint_vel[:, asset_cfg.joint_ids]
     qfrc = asset.data.applied_torque[:, asset_cfg.joint_ids]
@@ -47,7 +36,6 @@ def energy(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("r
 def foot_clearance_reward(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, target_height: float, std: float, tanh_mult: float
 ) -> torch.Tensor:
-    """Reward the swinging feet for clearing a specified height off the ground."""
     asset: RigidObject = env.scene[asset_cfg.name]
     foot_z_target_error = torch.square(asset.data.body_pos_w[:, asset_cfg.body_ids, 2] - target_height)
     foot_velocity_tanh = torch.tanh(
@@ -65,7 +53,6 @@ def feet_gait(
     threshold: float = 0.5,
     command_name: str = None,
 ) -> torch.Tensor:
-    """Reward for matching desired gait pattern (alternating stance/swing)."""
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     is_contact = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids] > 0
 
@@ -90,7 +77,6 @@ def feet_gait(
 def feet_contact_without_cmd(
     env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, command_name: str = "base_velocity"
 ) -> torch.Tensor:
-    """Reward for feet contact when the command is zero (standing still)."""
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     is_contact = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids] > 0
     command_norm = torch.norm(env.command_manager.get_command(command_name), dim=1)
@@ -103,7 +89,6 @@ def feet_slide(
     asset_cfg: SceneEntityCfg,
     sensor_cfg: SceneEntityCfg,
 ) -> torch.Tensor:
-    """Penalize feet sliding on the ground."""
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     asset: RigidObject = env.scene[asset_cfg.name]
     contacts = contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, 2] > 1.0
@@ -116,7 +101,6 @@ def air_time_variance_penalty(
     env: ManagerBasedRLEnv,
     sensor_cfg: SceneEntityCfg,
 ) -> torch.Tensor:
-    """Penalize variance in air/contact time between feet."""
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     if contact_sensor.cfg.track_air_time is False:
         raise RuntimeError("Activate ContactSensor's track_air_time!")
@@ -130,7 +114,6 @@ def air_time_variance_penalty(
 def base_height_l2(
     env: ManagerBasedRLEnv, target_height: float, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
-    """Penalize deviation from target base height."""
     asset: RigidObject = env.scene[asset_cfg.name]
     return torch.square(asset.data.root_pos_w[:, 2] - target_height)
 
@@ -138,17 +121,12 @@ def base_height_l2(
 def joint_deviation_l1(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
-    """Penalize joint positions deviating from default."""
     asset: Articulation = env.scene[asset_cfg.name]
     return torch.sum(
         torch.abs(asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]),
         dim=1,
     )
 
-
-# ============================================================
-# Scene Configuration
-# ============================================================
 
 @configclass
 class V6HumanoidSceneCfg(InteractiveSceneCfg):
@@ -183,10 +161,6 @@ class V6HumanoidSceneCfg(InteractiveSceneCfg):
     )
 
 
-# ============================================================
-# Commands Configuration
-# ============================================================
-
 @configclass
 class CommandsCfg:
 
@@ -205,10 +179,6 @@ class CommandsCfg:
     )
 
 
-# ============================================================
-# Actions Configuration
-# ============================================================
-
 @configclass
 class ActionsCfg:
 
@@ -223,10 +193,6 @@ class ActionsCfg:
         use_default_offset=True,
     )
 
-
-# ============================================================
-# Observations Configuration
-# ============================================================
 
 @configclass
 class ObservationsCfg:
@@ -264,10 +230,6 @@ class ObservationsCfg:
 
     policy: PolicyCfg = PolicyCfg()
 
-
-# ============================================================
-# Events Configuration
-# ============================================================
 
 @configclass
 class EventCfg:
@@ -337,15 +299,9 @@ class EventCfg:
     )
 
 
-# ============================================================
-# Rewards Configuration (Unitree G1 style)
-# ============================================================
-
 @configclass
 class RewardsCfg:
-    """Reward terms — mirrors Unitree G1 29DOF (unitree_rl_lab), adapted for V6 joints."""
 
-    # -- task
     track_lin_vel_xy = RewTerm(
         func=mdp.track_lin_vel_xy_yaw_frame_exp,
         weight=1.0,
@@ -359,7 +315,6 @@ class RewardsCfg:
 
     alive = RewTerm(func=mdp.is_alive, weight=0.15)
 
-    # -- base
     base_linear_velocity = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     base_angular_velocity = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
     joint_vel = RewTerm(func=mdp.joint_vel_l2, weight=-0.001)
@@ -368,20 +323,17 @@ class RewardsCfg:
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5.0)
     energy = RewTerm(func=energy, weight=-2e-5)
 
-    # -- joint deviation: pelvis (equivalent to G1 waist)
     joint_deviation_pelvis = RewTerm(
         func=joint_deviation_l1,
         weight=-1.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["pelvis_link"])},
     )
-    # -- joint deviation: hip roll/yaw (same as G1 hip_roll/hip_yaw)
     joint_deviation_legs = RewTerm(
         func=joint_deviation_l1,
         weight=-1.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*HIPr", ".*HIPy"])},
     )
 
-    # -- robot
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-5.0)
     base_height = RewTerm(
         func=base_height_l2,
@@ -389,7 +341,6 @@ class RewardsCfg:
         params={"target_height": 0.50},
     )
 
-    # -- feet: gait pattern (same as G1)
     gait = RewTerm(
         func=feet_gait,
         weight=0.5,
@@ -401,7 +352,6 @@ class RewardsCfg:
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
         },
     )
-    # -- feet: slide penalty
     feet_slide = RewTerm(
         func=feet_slide,
         weight=-0.2,
@@ -410,7 +360,6 @@ class RewardsCfg:
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
         },
     )
-    # -- feet: clearance reward (same as G1, target_height adapted for V6 smaller legs)
     feet_clearance = RewTerm(
         func=foot_clearance_reward,
         weight=1.0,
@@ -422,7 +371,6 @@ class RewardsCfg:
         },
     )
 
-    # -- other
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
@@ -433,13 +381,8 @@ class RewardsCfg:
     )
 
 
-# ============================================================
-# Terminations Configuration
-# ============================================================
-
 @configclass
 class TerminationsCfg:
-    """Termination terms — same as Unitree G1."""
 
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
@@ -454,18 +397,10 @@ class TerminationsCfg:
     )
 
 
-# ============================================================
-# Curriculum Configuration
-# ============================================================
-
 @configclass
 class CurriculumCfg:
     pass
 
-
-# ============================================================
-# Environment Configuration
-# ============================================================
 
 @configclass
 class V6HumanoidFlatEnvCfg(ManagerBasedRLEnvCfg):

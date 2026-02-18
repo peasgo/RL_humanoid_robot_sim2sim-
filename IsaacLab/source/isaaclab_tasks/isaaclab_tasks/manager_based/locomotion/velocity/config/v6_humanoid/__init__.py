@@ -1,13 +1,6 @@
-# Copyright (c) 2024, RL-human_robot Project.
-# SPDX-License-Identifier: BSD-3-Clause
-
 import gymnasium as gym
 
 from . import agents
-
-##
-# Register Gym environments.
-##
 
 gym.register(
     id="Isaac-Velocity-Flat-V6-Humanoid-v0",

@@ -1,5 +1,3 @@
-"""Configuration for the V6 Humanoid Legs robot."""
-
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
@@ -26,19 +24,15 @@ V6_HUMANOID_CFG = ArticulationCfg(
     ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.55),
-        # Rotate +90° around Z so robot's forward (-Y in URDF) aligns with +X (Isaac convention)
         rot=(0.7071068, 0.0, 0.0, 0.7071068),
         joint_pos={
-            # pelvis
             "pelvis_link": 0.0,
-            # right leg
             "RHIPp": -0.2,
             "RHIPy": 0.0,
             "RHIPr": 0.0,
             "RKNEEp": 0.4,
             "RANKLEp": -0.2,
             "RANKLEy": 0.0,
-            # left leg
             "LHIPp": -0.2,
             "LHIPy": 0.0,
             "LHIPr": 0.0,
