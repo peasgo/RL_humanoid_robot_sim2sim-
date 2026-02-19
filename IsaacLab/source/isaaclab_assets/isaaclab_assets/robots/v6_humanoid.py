@@ -24,7 +24,7 @@ V6_HUMANOID_CFG = ArticulationCfg(
     ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.55),
-        rot=(0.7071068, 0.0, 0.0, 0.7071068),
+        rot=(1.0, 0.0, 0.0, 0.0),
         joint_pos={
             "pelvis_link": 0.0,
             "RHIPp": -0.2,

@@ -1,13 +1,19 @@
 """
 V6 Humanoid Sim2Sim — MuJoCo deployment aligned with IsaacLab training.
 
-Alignment reference (flat_env_cfg.py / v6_humanoid.py):
-  obs[0:3]   = base_ang_vel * 0.2          (body frame)
-  obs[3:6]   = projected_gravity_b
-  obs[6:9]   = velocity_commands [vx, vy, wz]
-  obs[9:22]  = (joint_pos - default_joint_pos) * 1.0   (Isaac BFS order)
-  obs[22:35] = joint_vel * 0.05                         (Isaac BFS order)
-  obs[35:48] = last_action (raw policy output, Isaac BFS order)
+Alignment reference (flat_env_cfg.py / v6_humanoid.py / env.yaml):
+  Per-frame observation (48 dims):
+    obs[0:3]   = base_ang_vel * 0.2          (body frame)
+    obs[3:6]   = projected_gravity_b
+    obs[6:9]   = velocity_commands [vx, vy, wz]
+    obs[9:22]  = (joint_pos - default_joint_pos) * 1.0   (Isaac BFS order)
+    obs[22:35] = joint_vel * 0.05                         (Isaac BFS order)
+    obs[35:48] = last_action (raw policy output, Isaac BFS order)
+
+  History (env.yaml: history_length=5, flatten_history_dim=true):
+    IsaacLab stores per-TERM history buffers (oldest→newest), then concatenates:
+      [ang_vel_hist(3*5=15), gravity_hist(3*5=15), cmd_hist(3*5=15),
+       jpos_hist(13*5=65), jvel_hist(13*5=65), act_hist(13*5=65)] = 240
 
   action target = action[i] * 0.25 + default_joint_pos_isaac[i]
 
@@ -31,6 +37,40 @@ import os
 import argparse
 import threading
 import sys
+
+
+class ObsTermHistory:
+    """Per-term circular buffer mimicking IsaacLab's CircularBuffer behavior.
+
+    On first append after reset, all slots are filled with the same value.
+    Buffer order: oldest → newest (matching IsaacLab convention).
+    """
+
+    def __init__(self, max_len: int, term_dim: int):
+        self.max_len = max_len
+        self.term_dim = term_dim
+        self._buf = np.zeros((max_len, term_dim), dtype=np.float32)
+        self._num_pushes = 0
+
+    def reset(self):
+        self._buf[:] = 0.0
+        self._num_pushes = 0
+
+    def append(self, data: np.ndarray):
+        """Append data (shape: (term_dim,)). First append fills all slots."""
+        if self._num_pushes == 0:
+            # Fill entire buffer with first observation (IsaacLab behavior)
+            for i in range(self.max_len):
+                self._buf[i] = data
+        else:
+            # Shift left (drop oldest), append newest at end
+            self._buf[:-1] = self._buf[1:]
+            self._buf[-1] = data
+        self._num_pushes += 1
+
+    def flatten(self) -> np.ndarray:
+        """Return flattened buffer: [oldest_0..oldest_d, ..., newest_0..newest_d]."""
+        return self._buf.flatten()
 
 
 def get_gravity_orientation(quaternion):
@@ -288,7 +328,22 @@ if __name__ == "__main__":
     # ================================================================
     action_raw = np.zeros(num_actions, dtype=np.float32)  # last policy output (Isaac order)
     target_dof_pos = default_angles.copy()                 # PD targets (MuJoCo order)
-    obs = np.zeros(num_obs, dtype=np.float32)
+
+    # Observation history: per-term buffers (IsaacLab convention)
+    obs_history_len = int(config.get("obs_history_length", 1))
+    obs_single_dim = int(config.get("obs_single_frame_dim", num_obs))
+    # Term dimensions: ang_vel(3), gravity(3), cmd(3), jpos(13), jvel(13), act(13) = 48
+    term_dims = [3, 3, 3, num_actions, num_actions, num_actions]
+    term_names = ["ang_vel", "gravity", "cmd", "jpos_rel", "jvel", "last_act"]
+    assert sum(term_dims) == obs_single_dim, \
+        f"Term dims {sum(term_dims)} != obs_single_frame_dim {obs_single_dim}"
+    assert obs_single_dim * obs_history_len == num_obs, \
+        f"obs_single_dim({obs_single_dim}) * history({obs_history_len}) != num_obs({num_obs})"
+
+    # Create per-term history buffers
+    obs_term_histories = [ObsTermHistory(obs_history_len, d) for d in term_dims]
+    obs = np.zeros(num_obs, dtype=np.float32)  # full flattened obs (240 dims)
+    obs_frame = np.zeros(obs_single_dim, dtype=np.float32)  # single frame (48 dims)
     counter = 0
     policy_step_count = 0
 
@@ -311,7 +366,7 @@ if __name__ == "__main__":
     print(f"\n{'='*60}")
     print(f"V6 Humanoid Sim2Sim - Biped (13-action policy):")
     print(f"  num_actions: {num_actions}")
-    print(f"  num_obs: {num_obs}")
+    print(f"  num_obs: {num_obs} ({obs_single_dim} x {obs_history_len} history)")
     print(f"  action_scale: {action_scale}")
     print(f"  ang_vel_scale: {ang_vel_scale}")
     print(f"  dof_pos_scale: {dof_pos_scale}")
@@ -394,6 +449,9 @@ if __name__ == "__main__":
                 d.qvel[:] = 0
                 target_dof_pos[:] = default_angles
                 action_raw[:] = 0
+                # Reset observation history buffers
+                for hist_buf in obs_term_histories:
+                    hist_buf.reset()
                 counter = 0
                 policy_step_count = 0
                 start = time.time()
@@ -467,13 +525,19 @@ if __name__ == "__main__":
                 # IsaacLab: ObsTerm(func=mdp.last_action)
                 last_act = action_raw.copy()
 
-                # --- Assemble observation vector (48 dims) ---
-                obs[0:3] = omega_obs
-                obs[3:6] = gravity_obs
-                obs[6:9] = cmd_obs
-                obs[9:22] = qj_rel
-                obs[22:35] = dqj_obs
-                obs[35:48] = last_act
+                # --- Assemble current frame terms and append to history ---
+                current_terms = [omega_obs, gravity_obs, cmd_obs, qj_rel, dqj_obs, last_act]
+                for hist_buf, term_data in zip(obs_term_histories, current_terms):
+                    hist_buf.append(term_data)
+
+                # --- Build full observation: per-term history, oldest→newest ---
+                # Layout: [ang_vel_hist(15), gravity_hist(15), cmd_hist(15),
+                #          jpos_hist(65), jvel_hist(65), act_hist(65)] = 240
+                offset = 0
+                for hist_buf in obs_term_histories:
+                    flat = hist_buf.flatten()
+                    obs[offset:offset + len(flat)] = flat
+                    offset += len(flat)
 
                 # --- Clip observations (rsl_rl does this) ---
                 obs = np.clip(obs, -clip_obs, clip_obs)
@@ -491,23 +555,20 @@ if __name__ == "__main__":
                     print(f"  height:               {d.qpos[2]:.4f}m")
                     print(f"  ncon:                 {d.ncon}")
                     print(f"  ---")
-                    print(f"  Joint pos comparison (Isaac order):")
-                    for i_isaac, jname in enumerate(isaac_joint_order):
-                        mj_idx = isaac_to_mujoco[i_isaac]
-                        print(f"    [{i_isaac:2d}] {jname:14s}  mj_pos={qj_mujoco[mj_idx]:+.4f}"
-                              f"  isaac_pos={qj_isaac[i_isaac]:+.4f}"
-                              f"  def={default_angles_isaac[i_isaac]:+.4f}"
-                              f"  rel={qj_rel[i_isaac]:+.6f}"
-                              f"  vel={dqj_isaac[i_isaac]:+.4f}")
-                    print(f"  --- Full observation vector (48 dims) ---")
-                    print(f"  obs[0:3]   ang_vel*{ang_vel_scale}:   {np.array2string(obs[0:3], precision=6, separator=', ')}")
-                    print(f"  obs[3:6]   gravity:       {np.array2string(obs[3:6], precision=6, separator=', ')}")
-                    print(f"  obs[6:9]   cmd:           {np.array2string(obs[6:9], precision=6, separator=', ')}")
-                    print(f"  obs[9:22]  joint_pos_rel: {np.array2string(obs[9:22], precision=6, separator=', ')}")
-                    print(f"  obs[22:35] joint_vel*{dof_vel_scale}: {np.array2string(obs[22:35], precision=6, separator=', ')}")
-                    print(f"  obs[35:48] last_action:   {np.array2string(obs[35:48], precision=6, separator=', ')}")
-                    print(f"  --- Full obs as flat array ---")
-                    print(f"  {np.array2string(obs, precision=6, separator=', ', max_line_width=120)}")
+                    print(f"  Current frame (48 dims):")
+                    print(f"    ang_vel*{ang_vel_scale}:   {np.array2string(omega_obs, precision=6, separator=', ')}")
+                    print(f"    gravity:       {np.array2string(gravity_obs, precision=6, separator=', ')}")
+                    print(f"    cmd:           {np.array2string(cmd_obs, precision=6, separator=', ')}")
+                    print(f"    joint_pos_rel: {np.array2string(qj_rel, precision=6, separator=', ')}")
+                    print(f"    joint_vel*{dof_vel_scale}: {np.array2string(dqj_obs, precision=6, separator=', ')}")
+                    print(f"    last_action:   {np.array2string(last_act, precision=6, separator=', ')}")
+                    print(f"  --- Full obs ({num_obs} dims = {obs_single_dim}x{obs_history_len} history) ---")
+                    offset_dbg = 0
+                    for tname, hist_buf in zip(term_names, obs_term_histories):
+                        tlen = hist_buf.max_len * hist_buf.term_dim
+                        print(f"    {tname:10s}[{offset_dbg}:{offset_dbg+tlen}]: "
+                              f"{np.array2string(obs[offset_dbg:offset_dbg+tlen], precision=4, separator=', ', max_line_width=120)}")
+                        offset_dbg += tlen
                     print(f"  --- Action (previous) ---")
                     print(f"  action_raw: {np.array2string(action_raw, precision=4, separator=', ')}")
                     print(f"  target_dof_pos (MJ): {np.array2string(target_dof_pos, precision=4, separator=', ')}")
@@ -516,8 +577,8 @@ if __name__ == "__main__":
                     # Brief diagnostics for first 3 steps even without --debug
                     print(f"\n[Policy Step {policy_step_count}] sim_t={sim_time:.4f}s  wall_t={t_wall:.3f}s")
                     print(f"  ang_vel_body={omega_body}  gravity={gravity_obs}")
-                    print(f"  obs[0:3]={obs[0:3]}  obs[3:6]={obs[3:6]}")
-                    print(f"  cmd={cmd}  obs[6:9]={obs[6:9]}")
+                    print(f"  obs shape={obs.shape}  obs[0:3]={obs[0:3]}  obs[3:6]={obs[3:6]}")
+                    print(f"  cmd={cmd}")
 
                 if t_wall - last_print_time >= 2.0:
                     last_print_time = t_wall
