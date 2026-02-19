@@ -1,9 +1,12 @@
 import math
 import torch
+from collections.abc import Sequence
+from dataclasses import MISSING
 
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.managers import EventTermCfg as EventTerm
@@ -11,6 +14,7 @@ from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
 from isaaclab.envs import ManagerBasedRLEnvCfg, ManagerBasedRLEnv
+from isaaclab.envs.mdp import UniformVelocityCommandCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg, Articulation
 from isaaclab.assets.rigid_object import RigidObject
@@ -26,11 +30,100 @@ from isaaclab_assets.robots.v6_humanoid import V6_HUMANOID_CFG
 FEET_BODIES = ["RANKLEy", "LANKLEy"]
 
 
+# ============================================================
+# Velocity command with limit_ranges for curriculum learning
+# ============================================================
+@configclass
+class UniformLevelVelocityCommandCfg(UniformVelocityCommandCfg):
+    limit_ranges: UniformVelocityCommandCfg.Ranges = MISSING
+
+
+# ============================================================
+# Curriculum: velocity command levels
+# ============================================================
+def lin_vel_cmd_levels(
+    env: ManagerBasedRLEnv,
+    env_ids: Sequence[int],
+    reward_term_name: str = "track_lin_vel_xy",
+) -> torch.Tensor:
+    command_term = env.command_manager.get_term("base_velocity")
+    ranges = command_term.cfg.ranges
+    limit_ranges = command_term.cfg.limit_ranges
+
+    reward_term = env.reward_manager.get_term_cfg(reward_term_name)
+    reward = torch.mean(env.reward_manager._episode_sums[reward_term_name][env_ids]) / env.max_episode_length_s
+
+    if env.common_step_counter % env.max_episode_length == 0:
+        if reward > reward_term.weight * 0.8:
+            delta_command = torch.tensor([-0.1, 0.1], device=env.device)
+            ranges.lin_vel_x = torch.clamp(
+                torch.tensor(ranges.lin_vel_x, device=env.device) + delta_command,
+                limit_ranges.lin_vel_x[0],
+                limit_ranges.lin_vel_x[1],
+            ).tolist()
+            ranges.lin_vel_y = torch.clamp(
+                torch.tensor(ranges.lin_vel_y, device=env.device) + delta_command,
+                limit_ranges.lin_vel_y[0],
+                limit_ranges.lin_vel_y[1],
+            ).tolist()
+
+    return torch.tensor(ranges.lin_vel_x[1], device=env.device)
+
+
+# ============================================================
+# Custom reward functions
+# ============================================================
 def energy(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
     qvel = asset.data.joint_vel[:, asset_cfg.joint_ids]
     qfrc = asset.data.applied_torque[:, asset_cfg.joint_ids]
     return torch.sum(torch.abs(qvel) * torch.abs(qfrc), dim=-1)
+
+
+def stand_still(
+    env: ManagerBasedRLEnv, command_name: str = "base_velocity", asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+) -> torch.Tensor:
+    """Penalize joint deviation from default when command is zero."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    reward = torch.sum(torch.abs(asset.data.joint_pos - asset.data.default_joint_pos), dim=1)
+    cmd_norm = torch.norm(env.command_manager.get_command(command_name), dim=1)
+    return reward * (cmd_norm < 0.1)
+
+
+def feet_stumble(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize feet hitting vertical surfaces (anti-vibration)."""
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    forces_z = torch.abs(contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, 2])
+    forces_xy = torch.linalg.norm(contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, :2], dim=2)
+    reward = torch.any(forces_xy > 4 * forces_z, dim=1).float()
+    return reward
+
+
+def feet_too_near(
+    env: ManagerBasedRLEnv, threshold: float = 0.18, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+) -> torch.Tensor:
+    """Penalize feet being too close together (stability)."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    feet_pos = asset.data.body_pos_w[:, asset_cfg.body_ids, :]
+    distance = torch.norm(feet_pos[:, 0] - feet_pos[:, 1], dim=-1)
+    return (threshold - distance).clamp(min=0)
+
+
+def joint_mirror(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, mirror_joints: list) -> torch.Tensor:
+    """Reward left-right symmetry of joint positions."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    if not hasattr(env, "joint_mirror_joints_cache") or env.joint_mirror_joints_cache is None:
+        env.joint_mirror_joints_cache = [
+            [asset.find_joints(joint_name) for joint_name in joint_pair] for joint_pair in mirror_joints
+        ]
+    reward = torch.zeros(env.num_envs, device=env.device)
+    for joint_pair in env.joint_mirror_joints_cache:
+        reward += torch.sum(
+            torch.square(asset.data.joint_pos[:, joint_pair[0][0]] - asset.data.joint_pos[:, joint_pair[1][0]]),
+            dim=-1,
+        )
+    reward *= 1 / len(mirror_joints) if len(mirror_joints) > 0 else 0
+    return reward
 
 
 def foot_clearance_reward(
@@ -128,6 +221,9 @@ def joint_deviation_l1(
     )
 
 
+# ============================================================
+# Scene
+# ============================================================
 @configclass
 class V6HumanoidSceneCfg(InteractiveSceneCfg):
 
@@ -161,17 +257,25 @@ class V6HumanoidSceneCfg(InteractiveSceneCfg):
     )
 
 
+# ============================================================
+# Commands - with limit_ranges for curriculum learning
+# ============================================================
 @configclass
 class CommandsCfg:
 
-    base_velocity = mdp.UniformVelocityCommandCfg(
+    base_velocity = UniformLevelVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(10.0, 10.0),
         rel_standing_envs=0.02,
         rel_heading_envs=1.0,
         heading_command=False,
         debug_vis=True,
-        ranges=mdp.UniformVelocityCommandCfg.Ranges(
+        ranges=UniformLevelVelocityCommandCfg.Ranges(
+            lin_vel_x=(-0.1, 0.1),
+            lin_vel_y=(-0.1, 0.1),
+            ang_vel_z=(-0.1, 0.1),
+        ),
+        limit_ranges=UniformLevelVelocityCommandCfg.Ranges(
             lin_vel_x=(-0.5, 1.0),
             lin_vel_y=(-0.3, 0.3),
             ang_vel_z=(-0.3, 0.3),
@@ -179,6 +283,9 @@ class CommandsCfg:
     )
 
 
+# ============================================================
+# Actions
+# ============================================================
 @configclass
 class ActionsCfg:
 
@@ -194,6 +301,9 @@ class ActionsCfg:
     )
 
 
+# ============================================================
+# Observations - with history_length=5 and asymmetric critic
+# ============================================================
 @configclass
 class ObservationsCfg:
 
@@ -225,12 +335,36 @@ class ObservationsCfg:
         actions = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
+            self.history_length = 5
             self.enable_corruption = True
             self.concatenate_terms = True
 
     policy: PolicyCfg = PolicyCfg()
 
+    @configclass
+    class CriticCfg(ObsGroup):
+        """Privileged observations for asymmetric actor-critic."""
 
+        base_lin_vel = ObsTerm(func=mdp.base_lin_vel)
+        base_ang_vel = ObsTerm(func=mdp.base_ang_vel, scale=0.2)
+        projected_gravity = ObsTerm(func=mdp.projected_gravity)
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands,
+            params={"command_name": "base_velocity"},
+        )
+        joint_pos = ObsTerm(func=mdp.joint_pos_rel)
+        joint_vel = ObsTerm(func=mdp.joint_vel_rel, scale=0.05)
+        actions = ObsTerm(func=mdp.last_action)
+
+        def __post_init__(self):
+            self.history_length = 5
+
+    critic: CriticCfg = CriticCfg()
+
+
+# ============================================================
+# Events
+# ============================================================
 @configclass
 class EventCfg:
 
@@ -299,9 +433,13 @@ class EventCfg:
     )
 
 
+# ============================================================
+# Rewards - with all G1 reward terms ported
+# ============================================================
 @configclass
 class RewardsCfg:
 
+    # -- task
     track_lin_vel_xy = RewTerm(
         func=mdp.track_lin_vel_xy_yaw_frame_exp,
         weight=1.0,
@@ -315,6 +453,7 @@ class RewardsCfg:
 
     alive = RewTerm(func=mdp.is_alive, weight=0.15)
 
+    # -- base
     base_linear_velocity = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     base_angular_velocity = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
     joint_vel = RewTerm(func=mdp.joint_vel_l2, weight=-0.001)
@@ -323,6 +462,7 @@ class RewardsCfg:
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-5.0)
     energy = RewTerm(func=energy, weight=-2e-5)
 
+    # -- joint deviation
     joint_deviation_pelvis = RewTerm(
         func=joint_deviation_l1,
         weight=-1.0,
@@ -334,6 +474,7 @@ class RewardsCfg:
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*HIPr", ".*HIPy"])},
     )
 
+    # -- robot
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-5.0)
     base_height = RewTerm(
         func=base_height_l2,
@@ -341,6 +482,7 @@ class RewardsCfg:
         params={"target_height": 0.50},
     )
 
+    # -- feet
     gait = RewTerm(
         func=feet_gait,
         weight=0.5,
@@ -371,6 +513,59 @@ class RewardsCfg:
         },
     )
 
+    # -- NEW: feet_stumble (anti-vibration, from G1)
+    feet_stumble = RewTerm(
+        func=feet_stumble,
+        weight=-1.0,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
+        },
+    )
+
+    # -- NEW: feet_too_near (stability, from G1)
+    feet_too_near = RewTerm(
+        func=feet_too_near,
+        weight=-1.0,
+        params={
+            "threshold": 0.18,
+            "asset_cfg": SceneEntityCfg("robot", body_names=FEET_BODIES),
+        },
+    )
+
+    # -- NEW: stand_still (keep still at zero command, from G1)
+    stand_still = RewTerm(
+        func=stand_still,
+        weight=-0.5,
+        params={"command_name": "base_velocity"},
+    )
+
+    # -- NEW: joint_mirror (left-right symmetry, from G1)
+    joint_mirror = RewTerm(
+        func=joint_mirror,
+        weight=-0.1,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "mirror_joints": [
+                ["RHIPp", "LHIPp"],
+                ["RHIPy", "LHIPy"],
+                ["RHIPr", "LHIPr"],
+                ["RKNEEp", "LKNEEp"],
+                ["RANKLEp", "LANKLEp"],
+                ["RANKLEy", "LANKLEy"],
+            ],
+        },
+    )
+
+    # -- NEW: air_time_variance_penalty (was defined but unused, from G1)
+    air_time_variance = RewTerm(
+        func=air_time_variance_penalty,
+        weight=-0.5,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
+        },
+    )
+
+    # -- contacts
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
@@ -381,6 +576,9 @@ class RewardsCfg:
     )
 
 
+# ============================================================
+# Terminations
+# ============================================================
 @configclass
 class TerminationsCfg:
 
@@ -397,11 +595,17 @@ class TerminationsCfg:
     )
 
 
+# ============================================================
+# Curriculum - velocity command curriculum learning
+# ============================================================
 @configclass
 class CurriculumCfg:
-    pass
+    lin_vel_cmd_levels = CurrTerm(func=lin_vel_cmd_levels)
 
 
+# ============================================================
+# Main env config
+# ============================================================
 @configclass
 class V6HumanoidFlatEnvCfg(ManagerBasedRLEnvCfg):
 
@@ -437,6 +641,9 @@ class V6HumanoidFlatEnvCfg_PLAY(V6HumanoidFlatEnvCfg):
         self.scene.env_spacing = 2.5
 
         self.observations.policy.enable_corruption = False
+
+        # Use full velocity range for play
+        self.commands.base_velocity.ranges = self.commands.base_velocity.limit_ranges
 
         self.events.base_external_force_torque = None
         self.events.push_robot = None

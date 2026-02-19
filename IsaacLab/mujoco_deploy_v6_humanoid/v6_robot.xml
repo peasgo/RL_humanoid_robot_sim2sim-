@@ -1,0 +1,159 @@
+<mujoco model="V6_Humanoid">
+    <compiler angle="radian" meshdir="assets" autolimits="true"/>
+
+    <default>
+        <default class="v6robot">
+            <joint damping="0" armature="0.01" frictionloss="0.0"/>
+            <geom contype="0" conaffinity="0"/>
+        </default>
+        <default class="collision">
+            <geom type="mesh" group="1" condim="4" friction="1.0 0.3 0.01"
+                  contype="1" conaffinity="2"
+                  solref="0.004 1" solimp="0.9 0.95 0.001"/>
+        </default>
+    </default>
+
+    <asset>
+        <mesh name="base_link" file="base_link.STL"/>
+        <mesh name="pelvis_link" file="pelvis_link.STL"/>
+        <mesh name="RHIPp" file="RHIPp.STL"/>
+        <mesh name="RHIPy" file="RHIPy.STL"/>
+        <mesh name="RHIPr" file="RHIPr.STL"/>
+        <mesh name="RKNEEp" file="RKNEEp.STL"/>
+        <mesh name="RANKLEp" file="RANKLEp.STL"/>
+        <mesh name="RANKLEy" file="RANKLEy.STL"/>
+        <mesh name="LHIPp" file="LHIPp.STL"/>
+        <mesh name="LHIPy" file="LHIPy.STL"/>
+        <mesh name="LHIPr" file="LHIPr.STL"/>
+        <mesh name="LKNEEp" file="LKNEEp.STL"/>
+        <mesh name="LANKLEp" file="LANKLEp.STL"/>
+        <mesh name="LANKLEy" file="LANKLEy.STL"/>
+    </asset>
+
+    <worldbody>
+        <!-- base_link with freejoint, init height=0.55, rot 90deg around X -->
+        <body name="base_link" pos="0 0 0.55" quat="0.7071068 0.0 0.0 0.7071068" childclass="v6robot">
+            <freejoint/>
+            <inertial pos="0 -0.00116688 0" mass="6.0"
+                      diaginertia="6.36249e-05 6.36509e-05 5.21136e-05"/>
+            <geom type="mesh" rgba="1 1 1 1" mesh="base_link"/>
+            <geom type="mesh" mesh="base_link" class="collision"/>
+
+            <!-- pelvis_link (from compile) -->
+            <body name="pelvis_link" pos="0 0.04055 -0.095" quat="0.707105 0.707108 0 0">
+                <inertial pos="0.000246659 -0.026365 0.0262415" quat="0.00693792 0.707073 0.00693691 0.707073" mass="0.76" diaginertia="8.9239e-05 8.7765e-05 2.48085e-05"/>
+                <joint name="pelvis_link" pos="0 0 0" axis="0 0 1" range="-1.6 1.6"/>
+                <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="pelvis_link"/>
+                <geom type="mesh" mesh="pelvis_link" class="collision"/>
+
+                <!-- Right Leg -->
+                <body name="RHIPp" pos="-0.0899 -0.027 0.04725" quat="0.962698 0.27058 0 0">
+                    <inertial pos="0.0176284 -0.012777 0.0137529" quat="0.918843 -0.233463 -0.0887732 0.305518" mass="0.08647" diaginertia="1.48872e-05 1.42318e-05 3.45932e-06"/>
+                    <joint name="RHIPp" pos="0 0 0" axis="1 0 0" range="-3.1 0.79"/>
+                    <geom type="mesh" rgba="0.866667 0.909804 1 1" mesh="RHIPp"/>
+                    <geom type="mesh" mesh="RHIPp" class="collision"/>
+
+                    <body name="RHIPy" pos="0.0013406 0.00058603 0.00096017">
+                        <inertial pos="-0.00372207 -0.0312537 0.0232286" quat="0.430875 0.85586 -0.268028 -0.100055" mass="0.01938" diaginertia="6.36778e-06 5.3157e-06 1.79881e-06"/>
+                        <joint name="RHIPy" pos="0 0 0" axis="0 0.520972 0.853574" range="-1.6 0.7"/>
+                        <geom type="mesh" rgba="1 1 1 1" mesh="RHIPy"/>
+                        <geom type="mesh" mesh="RHIPy" class="collision"/>
+
+                        <body name="RHIPr" pos="-0.0019151 -0.17144 0.10276" quat="-1.79765e-06 -3.20326e-06 0.872062 0.489395">
+                            <inertial pos="-0.00852993 -0.00430334 0.0409064" quat="0.99777 -0.0081107 0.058572 -0.0309512" mass="0.21474" diaginertia="3.23312e-05 2.93801e-05 9.12598e-06"/>
+                            <joint name="RHIPr" pos="0 0 0" axis="0 0 1" range="-1.7 0.52"/>
+                            <geom type="mesh" rgba="1 1 1 1" mesh="RHIPr"/>
+                            <geom type="mesh" mesh="RHIPr" class="collision"/>
+
+                            <body name="RKNEEp" pos="-0.0145 0.0005 0" quat="0.0229607 0.00814977 -0.865766 -0.499855">
+                                <inertial pos="-0.0208592 -0.0628859 0.0364106" quat="0.859786 0.510494 -0.0126305 0.00218425" mass="0.14365" diaginertia="6.25907e-05 6.14609e-05 5.04585e-06"/>
+                                <joint name="RKNEEp" pos="0 0 0" axis="0.998814 -0.00886454 0.0478692" range="-0.79 2.6"/>
+                                <geom type="mesh" rgba="1 1 1 1" mesh="RKNEEp"/>
+                                <geom type="mesh" mesh="RKNEEp" class="collision"/>
+
+                                <body name="RANKLEp" pos="-0.020463 -0.17739 0.10166" quat="0.617927 0.3697 0.337242 -0.606429">
+                                    <inertial pos="0.000499998 1.8496e-09 -0.00486658" mass="0.00592" diaginertia="3.77945e-08 3.77945e-08 3.77945e-08"/>
+                                    <joint name="RANKLEp" pos="0 0 0" axis="0 1 0" range="-1.4 1.4"/>
+                                    <geom type="mesh" rgba="0.866667 0.909804 1 1" mesh="RANKLEp"/>
+                                    <geom type="mesh" mesh="RANKLEp" class="collision"/>
+
+                                    <body name="RANKLEy" pos="0 0 -0.005" quat="0.707105 0 0 0.707108">
+                                        <inertial pos="2.18288e-11 0.0405307 0.021534" quat="0.499966 0.500034 -0.500034 0.499966" mass="0.14984" diaginertia="9.70905e-05 8.38515e-05 1.37441e-05"/>
+                                        <joint name="RANKLEy" pos="0 0 0" axis="0 1 0" range="-0.52 0.52"/>
+                                        <geom type="mesh" rgba="1 1 1 1" mesh="RANKLEy"/>
+                                        <geom type="mesh" mesh="RANKLEy" class="collision"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+
+                <!-- Left Leg -->
+                <body name="LHIPp" pos="0.0899 -0.027 0.04725" quat="0.499998 0.5 -0.5 0.500002">
+                    <inertial pos="0.00506577 0.0175468 0.0180829" quat="0.711917 0.361592 0.551873 0.240544" mass="0.08647" diaginertia="1.48223e-05 1.41667e-05 3.58922e-06"/>
+                    <joint name="LHIPp" pos="0 0 0" axis="0 -1 0" range="-3.1 0.79"/>
+                    <geom type="mesh" rgba="0.866667 0.909804 1 1" mesh="LHIPp"/>
+                    <geom type="mesh" mesh="LHIPp" class="collision"/>
+
+                    <body name="LHIPy">
+                        <inertial pos="0.00040751 -0.00263809 0.0398992" quat="0.178758 0.611167 0.484633 0.599709" mass="0.01938" diaginertia="3.71989e-05 3.04923e-05 1.20862e-05"/>
+                        <joint name="LHIPy" pos="0 0 0" axis="1 0 0" range="-0.7 1.6"/>
+                        <geom type="mesh" rgba="0.866667 0.909804 1 1" mesh="LHIPy"/>
+                        <geom type="mesh" mesh="LHIPy" class="collision"/>
+
+                        <body name="LHIPr" pos="-0.00048209 -0.00057453 0.2" quat="0.707105 0 0 -0.707108">
+                            <inertial pos="-0.00858602 -0.00470615 -0.0410635" quat="0.997767 0.00805147 -0.058578 -0.0310655" mass="0.21474" diaginertia="3.23292e-05 2.93787e-05 9.12482e-06"/>
+                            <joint name="LHIPr" pos="0 0 0" axis="0 0 -1" range="-0.52 1.7"/>
+                            <geom type="mesh" rgba="1 1 1 1" mesh="LHIPr"/>
+                            <geom type="mesh" mesh="LHIPr" class="collision"/>
+
+                            <body name="LKNEEp" pos="-0.0152 0 0">
+                                <inertial pos="0.0198944 0.00129514 0.0714651" quat="0.999855 0.0121194 -0.00573388 0.0105326" mass="0.14365" diaginertia="0.000169254 0.000166076 1.37561e-05"/>
+                                <joint name="LKNEEp" pos="0 0 0" axis="-1 0 0" range="-2.6 0.79"/>
+                                <geom type="mesh" rgba="0.866667 0.909804 1 1" mesh="LKNEEp"/>
+                                <geom type="mesh" mesh="LKNEEp" class="collision"/>
+
+                                <body name="LANKLEp" pos="0.0152 0.005 0.2" quat="0.499998 0.5 0.5 -0.500002">
+                                    <inertial pos="-1.8496e-09 -1.8496e-09 0.005" mass="0.00592" diaginertia="3.77945e-08 3.77945e-08 3.77945e-08"/>
+                                    <joint name="LANKLEp" pos="0 0 0" axis="0 -1 0" range="-1.4 1.4"/>
+                                    <geom type="mesh" rgba="0.866667 0.909804 1 1" mesh="LANKLEp"/>
+                                    <geom type="mesh" mesh="LANKLEp" class="collision"/>
+
+                                    <body name="LANKLEy" quat="0.512487 -0.487191 0.487193 -0.512489">
+                                        <inertial pos="2.32737e-11 0.0376072 -0.0235825" quat="0.512525 0.487153 -0.487153 0.512525" mass="0.14984" diaginertia="9.68505e-05 8.37068e-05 1.35999e-05"/>
+                                        <joint name="LANKLEy" pos="0 0 0" axis="0 -0.998719 0.050592" range="-0.523 0.523"/>
+                                        <geom type="mesh" rgba="1 1 1 1" mesh="LANKLEy"/>
+                                        <geom type="mesh" mesh="LANKLEy" class="collision"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+
+    <contact>
+    </contact>
+
+    <actuator>
+        <!-- Pelvis -->
+        <position name="pelvis_link" joint="pelvis_link" kp="150" kv="15" forcerange="-200 200"/>
+        <!-- Right Leg -->
+        <position name="RHIPp" joint="RHIPp" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="RHIPy" joint="RHIPy" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="RHIPr" joint="RHIPr" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="RKNEEp" joint="RKNEEp" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="RANKLEp" joint="RANKLEp" kp="80" kv="8" forcerange="-80 80"/>
+        <position name="RANKLEy" joint="RANKLEy" kp="80" kv="8" forcerange="-80 80"/>
+        <!-- Left Leg -->
+        <position name="LHIPp" joint="LHIPp" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="LHIPy" joint="LHIPy" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="LHIPr" joint="LHIPr" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="LKNEEp" joint="LKNEEp" kp="120" kv="12" forcerange="-150 150"/>
+        <position name="LANKLEp" joint="LANKLEp" kp="80" kv="8" forcerange="-80 80"/>
+        <position name="LANKLEy" joint="LANKLEy" kp="80" kv="8" forcerange="-80 80"/>
+    </actuator>
+</mujoco>

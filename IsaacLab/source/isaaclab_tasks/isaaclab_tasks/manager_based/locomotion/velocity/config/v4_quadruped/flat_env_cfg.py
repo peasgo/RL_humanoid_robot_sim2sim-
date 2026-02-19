@@ -1,8 +1,3 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers
-# SPDX-License-Identifier: BSD-3-Clause
-#
-# V4 四足机器人 flat env 配置
-# 基于 unitree_rl_lab Go2 配置改写，适配 V4 坐标系
 import math
 import torch
 
@@ -34,7 +29,6 @@ from isaaclab_assets.robots.v4_quadruped import V4_QUADRUPED_CFG
 def v4_base_lin_vel(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: RigidObject = env.scene[asset_cfg.name]
     vel = asset.data.root_lin_vel_b
-    # remap: forward=body_z, lateral=body_x, vertical=body_y
     return torch.stack([vel[:, 2], vel[:, 0], vel[:, 1]], dim=-1)
 
 
@@ -50,10 +44,6 @@ def v4_projected_gravity(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg = Scene
     return torch.stack([grav[:, 2], grav[:, 0], grav[:, 1]], dim=-1)
 
 
-# ============================================================
-# 速度跟踪奖励（V4坐标系适配）
-# ============================================================
-
 def v4_track_lin_vel_xy_exp(
     env: ManagerBasedRLEnv, std: float, command_name: str,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
@@ -61,7 +51,6 @@ def v4_track_lin_vel_xy_exp(
     asset: RigidObject = env.scene[asset_cfg.name]
     cmd = env.command_manager.get_command(command_name)
     vel = asset.data.root_lin_vel_b
-    # V4: forward=body_z, lateral=body_x
     actual_forward = vel[:, 2]
     actual_lateral = vel[:, 0]
     error = torch.square(cmd[:, 0] - actual_forward) + torch.square(cmd[:, 1] - actual_lateral)
@@ -75,20 +64,14 @@ def v4_track_ang_vel_z_exp(
     asset: RigidObject = env.scene[asset_cfg.name]
     cmd = env.command_manager.get_command(command_name)
     ang = asset.data.root_ang_vel_b
-    # V4: yaw rate = body_y angular velocity
     actual_yaw_rate = ang[:, 1]
     error = torch.square(cmd[:, 2] - actual_yaw_rate)
     return torch.exp(-error / std**2)
 
 
-# ============================================================
-# V4 惩罚函数
-# ============================================================
-
 def v4_lin_vel_z_l2(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """惩罚垂直方向速度（V4: body Y轴）"""
     asset: RigidObject = env.scene[asset_cfg.name]
     return torch.square(asset.data.root_lin_vel_b[:, 1])
 
@@ -96,7 +79,6 @@ def v4_lin_vel_z_l2(
 def v4_ang_vel_xy_l2(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """惩罚非yaw方向角速度（V4: body X和Z轴）"""
     asset: RigidObject = env.scene[asset_cfg.name]
     ang = asset.data.root_ang_vel_b
     return torch.square(ang[:, 0]) + torch.square(ang[:, 2])
@@ -105,7 +87,6 @@ def v4_ang_vel_xy_l2(
 def v4_flat_orientation_l2(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """惩罚非水平姿态（V4: gravity应在body Y轴）"""
     asset: RigidObject = env.scene[asset_cfg.name]
     grav = asset.data.projected_gravity_b
     return torch.square(grav[:, 0]) + torch.square(grav[:, 2])
@@ -114,14 +95,9 @@ def v4_flat_orientation_l2(
 def v4_lateral_vel_penalty(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """惩罚侧向速度（V4: body X轴），防止走歪"""
     asset: RigidObject = env.scene[asset_cfg.name]
     return torch.square(asset.data.root_lin_vel_b[:, 0])
 
-
-# ============================================================
-# 步态奖励（来自宇树 unitree_rl_lab）
-# ============================================================
 
 def v4_feet_gait(
     env: ManagerBasedRLEnv,
@@ -131,12 +107,6 @@ def v4_feet_gait(
     threshold: float = 0.5,
     command_name: str = None,
 ) -> torch.Tensor:
-    """对角步态奖励：约束脚的接触/摆动相位
-    
-    对于四足对角步态(trot):
-    - 前右+后左 同相 (offset=0.0)
-    - 前左+后右 同相 (offset=0.5)
-    """
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     is_contact = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids] > 0
 
@@ -161,17 +131,12 @@ def v4_feet_gait(
 def v4_feet_contact_without_cmd(
     env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, command_name: str = "base_velocity"
 ) -> torch.Tensor:
-    """站立时四脚着地奖励"""
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     is_contact = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids] > 0
     command_norm = torch.norm(env.command_manager.get_command(command_name), dim=1)
     reward = torch.sum(is_contact, dim=-1).float()
     return reward * (command_norm < 0.1)
 
-
-# ============================================================
-# 其他辅助奖励
-# ============================================================
 
 def waist_deviation_penalty(
     env: ManagerBasedRLEnv,
@@ -188,7 +153,6 @@ def waist_deviation_penalty(
 def joint_position_penalty(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, stand_still_scale: float, velocity_threshold: float
 ) -> torch.Tensor:
-    """宇树风格：站立时加大默认姿态惩罚"""
     asset: Articulation = env.scene[asset_cfg.name]
     cmd = torch.linalg.norm(env.command_manager.get_command("base_velocity")[:, :2], dim=1)
     body_vel = torch.linalg.norm(asset.data.root_lin_vel_b[:, :2], dim=1)
@@ -208,7 +172,6 @@ def v4_feet_slide(
     asset_cfg: SceneEntityCfg,
     sensor_cfg: SceneEntityCfg,
 ) -> torch.Tensor:
-    """惩罚脚在地面滑动"""
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     asset: RigidObject = env.scene[asset_cfg.name]
     contacts = contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, 2] > 1.0
@@ -221,7 +184,6 @@ def v4_air_time_variance_penalty(
     env: ManagerBasedRLEnv,
     sensor_cfg: SceneEntityCfg,
 ) -> torch.Tensor:
-    """惩罚四脚空中时间方差，鼓励对称步态"""
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
     if contact_sensor.cfg.track_air_time is False:
         raise RuntimeError("Activate ContactSensor's track_air_time!")
@@ -235,7 +197,6 @@ def v4_air_time_variance_penalty(
 def v4_bad_orientation(
     env: ManagerBasedRLEnv, limit_angle: float, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
-    """V4: gravity应对齐body Y轴"""
     asset: RigidObject = env.scene[asset_cfg.name]
     return torch.acos(-asset.data.projected_gravity_b[:, 1]).abs() > limit_angle
 
@@ -250,10 +211,6 @@ def reset_waist_joint_target(
     default_waist_pos = asset.data.default_joint_pos[env_ids][:, waist_joint_ids]
     asset.set_joint_position_target(default_waist_pos, joint_ids=waist_joint_ids, env_ids=env_ids)
 
-
-# ============================================================
-# 场景配置
-# ============================================================
 
 FEET_BODIES = ["R_ARM_feet", "L_arm_feet", "R_Feet", "L_Feet"]
 
@@ -291,10 +248,6 @@ class V4QuadrupedSceneCfg(InteractiveSceneCfg):
     )
 
 
-# ============================================================
-# 命令配置 - 前后直线走，不转弯
-# ============================================================
-
 @configclass
 class CommandsCfg:
 
@@ -306,16 +259,12 @@ class CommandsCfg:
         heading_command=False,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.8, 0.8),    # 前后都能走
-            lin_vel_y=(0.0, 0.0),     # 不侧移
-            ang_vel_z=(0.0, 0.0),     # 不转弯
+            lin_vel_x=(-0.8, 0.8),
+            lin_vel_y=(0.0, 0.0),
+            ang_vel_z=(0.0, 0.0),
         ),
     )
 
-
-# ============================================================
-# 动作配置
-# ============================================================
 
 @configclass
 class ActionsCfg:
@@ -332,10 +281,6 @@ class ActionsCfg:
         use_default_offset=True,
     )
 
-
-# ============================================================
-# 观测配置
-# ============================================================
 
 @configclass
 class ObservationsCfg:
@@ -373,10 +318,6 @@ class ObservationsCfg:
 
     policy: PolicyCfg = PolicyCfg()
 
-
-# ============================================================
-# 事件配置（域随机化）
-# ============================================================
 
 @configclass
 class EventCfg:
@@ -454,14 +395,9 @@ class EventCfg:
     )
 
 
-# ============================================================
-# 奖励配置 - 基于宇树Go2，适配V4
-# ============================================================
-
 @configclass
 class RewardsCfg:
 
-    # -- 任务：速度跟踪（核心奖励）
     track_lin_vel_xy = RewTerm(
         func=v4_track_lin_vel_xy_exp,
         weight=1.5,
@@ -473,13 +409,11 @@ class RewardsCfg:
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
 
-    # -- 基座惩罚
     lin_vel_z_l2 = RewTerm(func=v4_lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=v4_ang_vel_xy_l2, weight=-0.05)
     flat_orientation_l2 = RewTerm(func=v4_flat_orientation_l2, weight=-2.5)
     lateral_vel = RewTerm(func=v4_lateral_vel_penalty, weight=-1.5)
 
-    # -- 关节惩罚
     joint_vel = RewTerm(
         func=mdp.joint_vel_l2,
         weight=-0.001,
@@ -501,22 +435,18 @@ class RewardsCfg:
         },
     )
 
-    # -- 步态奖励（宇树核心：对角步态 trot）
-    # 脚顺序: R_ARM_feet(前右), L_arm_feet(前左), R_Feet(后右), L_Feet(后左)
-    # trot步态: 前右+后左同相(0.0), 前左+后右同相(0.5)
     feet_gait = RewTerm(
         func=v4_feet_gait,
         weight=1.0,
         params={
             "period": 0.5,
-            "offset": [0.0, 0.5, 0.5, 0.0],  # FR, FL, RR, RL
+            "offset": [0.0, 0.5, 0.5, 0.0],
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
             "threshold": 0.5,
             "command_name": "base_velocity",
         },
     )
 
-    # -- 脚部奖励/惩罚
     feet_air_time = RewTerm(
         func=mdp.feet_air_time,
         weight=0.1,
@@ -540,7 +470,6 @@ class RewardsCfg:
         },
     )
 
-    # -- 站立时四脚着地
     feet_contact_still = RewTerm(
         func=v4_feet_contact_without_cmd,
         weight=0.5,
@@ -550,7 +479,6 @@ class RewardsCfg:
         },
     )
 
-    # -- 接触惩罚
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
@@ -560,13 +488,8 @@ class RewardsCfg:
         },
     )
 
-    # -- V4 特有：锁定腰部
     waist_lock = RewTerm(func=waist_deviation_penalty, weight=-5.0)
 
-
-# ============================================================
-# 终止条件
-# ============================================================
 
 @configclass
 class TerminationsCfg:
@@ -584,22 +507,13 @@ class TerminationsCfg:
     bad_orientation = DoneTerm(func=v4_bad_orientation, params={"limit_angle": 0.8})
 
 
-# ============================================================
-# Curriculum（暂不使用，保持简单）
-# ============================================================
-
 @configclass
 class CurriculumCfg:
     pass
 
 
-# ============================================================
-# 主环境配置
-# ============================================================
-
 @configclass
 class V4QuadrupedFlatEnvCfg(ManagerBasedRLEnvCfg):
-    """V4四足直线行走环境配置"""
 
     scene: V4QuadrupedSceneCfg = V4QuadrupedSceneCfg(num_envs=4096, env_spacing=2.5)
     observations: ObservationsCfg = ObservationsCfg()
