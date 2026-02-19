@@ -16,4 +16,4 @@ trajectory_recording.h5
 
 # ignore big data by default
 **/*.zip
-.vscode/*.db
+.vscode/*.dbURDF_Forquad_V3/urdf/configuration/URDF_Forquad_V3_base.usd
