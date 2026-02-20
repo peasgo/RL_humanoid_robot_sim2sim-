@@ -101,11 +101,36 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # Print robot info
     robot = env.unwrapped.scene["robot"]
+    joint_names = robot.joint_names
     root_quat = robot.data.root_quat_w[0].cpu().numpy()
     print(f"\n{'='*60}")
     print(f"Fixed command: lin_vel_x={args_cli.forward_vel}, lin_vel_y={args_cli.lateral_vel}, ang_vel_z={args_cli.yaw_vel}")
     print(f"Root quaternion (w,x,y,z): {np.round(root_quat, 4)}")
+    print(f"Joint names: {joint_names}")
     print(f"{'='*60}\n")
+
+    def print_step_details(step_idx, obs_tensor, robot_ref):
+        """Print observation and joint angles for a given step."""
+        obs_np = obs_tensor[0].cpu().numpy()
+        joint_pos = robot_ref.data.joint_pos[0].cpu().numpy()
+        joint_vel = robot_ref.data.joint_vel[0].cpu().numpy()
+
+        print(f"\n{'='*60}")
+        print(f"  STEP {step_idx}")
+        print(f"{'='*60}")
+
+        # Observation vector
+        print(f"\n  [Observation] shape={obs_np.shape}")
+        print(f"  obs = {np.array2string(obs_np, precision=4, separator=', ', max_line_width=120)}")
+
+        # Joint positions (angles)
+        print(f"\n  [Joint Positions (rad)]")
+        for i, name in enumerate(joint_names):
+            print(f"    [{i:2d}] {name:30s}  pos={joint_pos[i]:+.6f}  vel={joint_vel[i]:+.6f}")
+        print()
+
+    # --- Step 0: before any action ---
+    print_step_details(0, obs, robot)
 
     step_count = 0
     print_interval = int(1.0 / dt)  # print every ~1 second
@@ -117,6 +142,16 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             obs, _, _, _ = env.step(actions)
 
             step_count += 1
+
+            # --- Step 1: after first action ---
+            if step_count == 1:
+                robot = env.unwrapped.scene["robot"]
+                act_np = actions[0].cpu().numpy()
+                print(f"\n  [Actions sent at step 0]")
+                for i, name in enumerate(joint_names):
+                    print(f"    [{i:2d}] {name:30s}  action={act_np[i]:+.6f}")
+                print_step_details(1, obs, robot)
+
             if step_count % print_interval == 0:
                 robot = env.unwrapped.scene["robot"]
                 # World frame velocity

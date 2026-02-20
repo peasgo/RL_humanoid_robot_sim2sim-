@@ -1,31 +1,3 @@
-"""
-V6 Humanoid Sim2Sim — MuJoCo deployment aligned with IsaacLab training.
-
-Alignment reference (flat_env_cfg.py / v6_humanoid.py / env.yaml):
-  Per-frame observation (48 dims):
-    obs[0:3]   = base_ang_vel * 0.2          (body frame)
-    obs[3:6]   = projected_gravity_b
-    obs[6:9]   = velocity_commands [vx, vy, wz]
-    obs[9:22]  = (joint_pos - default_joint_pos) * 1.0   (Isaac BFS order)
-    obs[22:35] = joint_vel * 0.05                         (Isaac BFS order)
-    obs[35:48] = last_action (raw policy output, Isaac BFS order)
-
-  History (env.yaml: history_length=5, flatten_history_dim=true):
-    IsaacLab stores per-TERM history buffers (oldest→newest), then concatenates:
-      [ang_vel_hist(3*5=15), gravity_hist(3*5=15), cmd_hist(3*5=15),
-       jpos_hist(13*5=65), jvel_hist(13*5=65), act_hist(13*5=65)] = 240
-
-  action target = action[i] * 0.25 + default_joint_pos_isaac[i]
-
-Note: ActionsCfg.joint_names order does NOT matter because
-  preserve_order=False (default). PhysX sorts joints into BFS order.
-  Both observations AND actions use Isaac BFS order.
-
-Key MuJoCo fact (confirmed):
-  d.qvel[0:3] = linear velocity in WORLD frame
-  d.qvel[3:6] = angular velocity in BODY frame  (NOT world!)
-  So we do NOT need quat_rotate_inverse for angular velocity.
-"""
 
 import time
 import mujoco.viewer
@@ -37,6 +9,8 @@ import os
 import argparse
 import threading
 import sys
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class ObsTermHistory:
@@ -80,6 +54,26 @@ def get_gravity_orientation(quaternion):
     gy = -2 * (y * z + w * x)
     gz = -(1 - 2 * (x * x + y * y))
     return np.array([gx, gy, gz])
+
+
+def quat_to_rotmat_wxyz(quat_wxyz):
+    """Quaternion (w,x,y,z) -> rotation matrix."""
+    w, x, y, z = quat_wxyz
+    n = np.sqrt(w * w + x * x + y * y + z * z)
+    if n > 0:
+        w, x, y, z = w / n, x / n, y / n, z / n
+    R = np.array([
+        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+        [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+        [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+    ], dtype=np.float64)
+    return R
+
+
+def world_to_body(v_world, quat_wxyz):
+    """Rotate world-frame vector into body frame."""
+    R_wb = quat_to_rotmat_wxyz(quat_wxyz)
+    return R_wb.T @ v_world
 
 
 class KeyboardController:
@@ -136,6 +130,8 @@ if __name__ == "__main__":
     parser.add_argument("config_file", type=str, help="config file name (e.g., v6_robot.yaml)")
     parser.add_argument("--no-policy", action="store_true", help="Disable policy, only PD hold default stance")
     parser.add_argument("--no-keyboard", action="store_true", help="Disable keyboard control")
+    parser.add_argument("--no-warmup", action="store_true",
+                        help="Skip warmup, start with joints at 0 (match IsaacLab reset behavior)")
     parser.add_argument("--debug", action="store_true",
                         help="Print full observation vector for first N policy steps (for comparison with dump_v6_isaac_obs.py)")
     parser.add_argument("--debug-steps", type=int, default=10,
@@ -176,12 +172,13 @@ if __name__ == "__main__":
         # IsaacLab: decimation = 4  (policy runs every 4 * 0.005 = 0.02s)
         control_decimation = config["control_decimation"]
 
-        # PD gains in MuJoCo joint order (set via position actuators in XML)
+        # PD gains (informational only - actual gains are in XML position actuators)
         kps = np.array(config["kps"], dtype=np.float32)
         kds = np.array(config["kds"], dtype=np.float32)
 
         # Default joint angles in MuJoCo joint order
         default_angles = np.array(config["default_angles"], dtype=np.float32)
+        print(f"[DIAG] default_angles after load: {default_angles}")
 
         # IsaacLab observation scales
         ang_vel_scale = config["ang_vel_scale"]      # 0.2  (base_ang_vel ObsTerm scale)
@@ -196,8 +193,6 @@ if __name__ == "__main__":
         num_obs = config["num_obs"]          # 48
         cmd = np.array(config["cmd_init"], dtype=np.float32)
 
-        mass_scale = float(config.get("mass_scale", 1.0))
-
     # ================================================================
     # Load MuJoCo model
     # ================================================================
@@ -208,15 +203,6 @@ if __name__ == "__main__":
     m = mujoco.MjModel.from_xml_path(xml_path)
     d = mujoco.MjData(m)
     m.opt.timestep = simulation_dt
-
-    # Mass scaling (optional)
-    if mass_scale != 1.0:
-        original_mass = sum(m.body_mass[bi] for bi in range(m.nbody))
-        for bi in range(m.nbody):
-            m.body_mass[bi] *= mass_scale
-            m.body_inertia[bi] *= mass_scale
-        scaled_mass = sum(m.body_mass[bi] for bi in range(m.nbody))
-        print(f"Mass scaling: {mass_scale}x  ({original_mass:.3f}kg -> {scaled_mass:.3f}kg)")
 
     # ================================================================
     # Get MuJoCo joint names (non-free joints, XML DFS order)
@@ -262,10 +248,13 @@ if __name__ == "__main__":
     #   [11] LANKLEy      default=0.0
     #   [12] RANKLEy      default=0.0
     # ================================================================
+    # ================================================================
+    # Observation joint order: PhysX BFS (used by joint_pos_rel, joint_vel_rel)
+    # ================================================================
     isaac_joint_order_from_yaml = config.get("isaac_joint_order", None)
     if isaac_joint_order_from_yaml is not None:
         isaac_joint_order = isaac_joint_order_from_yaml
-        print(f"Using isaac_joint_order from YAML config.")
+        print(f"Using isaac_joint_order (obs) from YAML config.")
     else:
         isaac_joint_order = [
             'pelvis_link',
@@ -278,37 +267,60 @@ if __name__ == "__main__":
         ]
         print(f"Using default isaac_joint_order (L-before-R BFS).")
 
-    print(f"Isaac joint order ({len(isaac_joint_order)} joints): {isaac_joint_order}")
+    print(f"Obs joint order ({len(isaac_joint_order)} joints): {isaac_joint_order}")
+
+    # ================================================================
+    # Action joint order: ActionsCfg explicit list (preserve_order=False → query order)
+    # In flat_env_cfg.py, joint_names are listed R-before-L, which matches MuJoCo DFS.
+    # ================================================================
+    action_joint_order_from_yaml = config.get("action_joint_order", None)
+    if action_joint_order_from_yaml is not None:
+        action_joint_order = action_joint_order_from_yaml
+        print(f"Using action_joint_order from YAML config.")
+    else:
+        # Default: same as ActionsCfg in flat_env_cfg.py = MuJoCo DFS order
+        action_joint_order = [
+            'pelvis_link',
+            'RHIPp', 'RHIPy', 'RHIPr', 'RKNEEp', 'RANKLEp', 'RANKLEy',
+            'LHIPp', 'LHIPy', 'LHIPr', 'LKNEEp', 'LANKLEp', 'LANKLEy',
+        ]
+        print(f"Using default action_joint_order (ActionsCfg / MuJoCo DFS).")
+
+    print(f"Action joint order ({len(action_joint_order)} joints): {action_joint_order}")
 
     # Validate all joints exist in MuJoCo
-    for jname in isaac_joint_order:
+    for jname in isaac_joint_order + action_joint_order:
         if jname not in mj_joint_names:
             raise ValueError(f"Joint '{jname}' not found in MuJoCo model. Available: {mj_joint_names}")
 
-    # Mapping: Isaac index -> MuJoCo joint index
-    # Used to reorder MuJoCo joint data into Isaac order for observations,
-    # and to map Isaac-ordered actions back to MuJoCo joints.
+    # Mapping: Isaac obs index -> MuJoCo joint index
+    # Used to reorder MuJoCo joint data into PhysX BFS order for observations.
     isaac_to_mujoco = np.array(
         [mj_joint_names.index(jname) for jname in isaac_joint_order],
         dtype=np.int32
     )
 
-    # Precompute default angles in Isaac order
-    # These are the same values as in v6_humanoid.py InitialStateCfg.joint_pos
-    default_angles_isaac = default_angles[isaac_to_mujoco]
+    # Mapping: Action index -> MuJoCo joint index
+    # Used to map policy action output to MuJoCo joints.
+    action_to_mujoco = np.array(
+        [mj_joint_names.index(jname) for jname in action_joint_order],
+        dtype=np.int32
+    )
+
+    # Precompute default angles in both orders
+    # IMPORTANT: use .copy() to prevent any later modification from affecting these
+    print(f"[DIAG] default_angles before isaac remap: {default_angles}")
+    default_angles_isaac = default_angles[isaac_to_mujoco].copy()  # for obs
+    default_angles_action = default_angles[action_to_mujoco].copy()  # for actions
+    print(f"[DIAG] default_angles_isaac: {default_angles_isaac}")
+    # Freeze default_angles to catch any accidental modification
+    default_angles.flags.writeable = False
 
     print(f"\nMapping - Isaac <-> MuJoCo:")
     for i_isaac, jname in enumerate(isaac_joint_order):
         mj_idx = isaac_to_mujoco[i_isaac]
         print(f"  Isaac[{i_isaac:2d}] {jname:14s} (def={default_angles_isaac[i_isaac]:+.1f})"
               f" <-> MJ[{mj_idx:2d}] {mj_joint_names[mj_idx]} (def={default_angles[mj_idx]:+.1f})")
-
-    # Joint limits (for safety clamping)
-    joint_limits = {}
-    for i, jname in enumerate(mj_joint_names):
-        jid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, jname)
-        if m.jnt_limited[jid]:
-            joint_limits[jname] = (float(m.jnt_range[jid, 0]), float(m.jnt_range[jid, 1]))
 
     # ================================================================
     # Load policy
@@ -327,7 +339,7 @@ if __name__ == "__main__":
     # Initialize state
     # ================================================================
     action_raw = np.zeros(num_actions, dtype=np.float32)  # last policy output (Isaac order)
-    target_dof_pos = default_angles.copy()                 # PD targets (MuJoCo order)
+    target_dof_pos = np.array(default_angles, dtype=np.float32)  # PD targets (MuJoCo order), explicit copy
 
     # Observation history: per-term buffers (IsaacLab convention)
     obs_history_len = int(config.get("obs_history_length", 1))
@@ -342,10 +354,13 @@ if __name__ == "__main__":
 
     # Create per-term history buffers
     obs_term_histories = [ObsTermHistory(obs_history_len, d) for d in term_dims]
-    obs = np.zeros(num_obs, dtype=np.float32)  # full flattened obs (240 dims)
+    obs = np.zeros(num_obs, dtype=np.float32)  # full flattened obs (48 dims)
     obs_frame = np.zeros(obs_single_dim, dtype=np.float32)  # single frame (48 dims)
     counter = 0
     policy_step_count = 0
+
+    # COM trajectory recording
+    com_trajectory = []  # list of (time, x, y, z)
 
     # rsl_rl clips observations and actions (defaults: 100.0)
     clip_obs = float(config.get("clip_obs", 100.0))
@@ -357,11 +372,19 @@ if __name__ == "__main__":
     # MuJoCo free joint: qpos[0:3]=pos, qpos[3:7]=quat(w,x,y,z)
     d.qpos[2] = init_height
     d.qpos[3:7] = [0.7071068, 0.0, 0.0, 0.7071068]
-    # Set joint angles to defaults (MuJoCo order)
-    d.qpos[7:] = default_angles
+
+    if args.no_warmup:
+        # Match IsaacLab reset: joints start at default_angles (InitialStateCfg.joint_pos)
+        # IsaacLab sets joint_pos = default_joint_pos at reset, so obs joint_pos_rel = 0
+        d.qpos[7:] = default_angles
+        target_dof_pos[:] = default_angles
+        print(f"[no-warmup] Joints initialized to default_angles (matching IsaacLab reset)")
+    else:
+        # Set joint angles to defaults (MuJoCo order)
+        d.qpos[7:] = default_angles
 
     # Warmup: let the robot settle under gravity with PD holding default pose
-    warmup_steps = int(5.0 / simulation_dt)
+    warmup_steps = 0 if args.no_warmup else int(5.0 / simulation_dt)
 
     print(f"\n{'='*60}")
     print(f"V6 Humanoid Sim2Sim - Biped (13-action policy):")
@@ -371,7 +394,6 @@ if __name__ == "__main__":
     print(f"  ang_vel_scale: {ang_vel_scale}")
     print(f"  dof_pos_scale: {dof_pos_scale}")
     print(f"  dof_vel_scale: {dof_vel_scale}")
-    print(f"  mass_scale: {mass_scale}")
     print(f"  control_decimation: {control_decimation}")
     print(f"  simulation_dt: {simulation_dt}")
     print(f"  init_height: {init_height}")
@@ -437,6 +459,14 @@ if __name__ == "__main__":
         render_interval = max(1, int(1.0 / 60.0 / simulation_dt))
         last_print_time = 0.0
 
+        # ================================================================
+        # Main simulation loop
+        # IsaacLab timing: obs → policy → step(decimation) → obs → ...
+        # We use a sub-step counter within each decimation period.
+        # The policy runs BEFORE physics steps (matching Gym semantics).
+        # ================================================================
+        substep = 0  # counts sub-steps within current decimation period
+
         while viewer.is_running() and time.time() - start < simulation_duration:
             step_start = time.time()
 
@@ -453,41 +483,22 @@ if __name__ == "__main__":
                 for hist_buf in obs_term_histories:
                     hist_buf.reset()
                 counter = 0
+                substep = 0
                 policy_step_count = 0
                 start = time.time()
                 print("\n[RESET] Robot pose reset!")
                 continue
 
             # ========================================================
-            # Apply PD control via position actuators
-            # MuJoCo position actuator: torque = kp*(target - q) - kv*dq
-            # This matches IsaacLab ImplicitActuatorCfg behavior.
+            # Policy step BEFORE physics (matching IsaacLab Gym semantics)
+            # IsaacLab: reset→obs0→policy(obs0)→a0→step(4)→obs1→policy(obs1)→...
+            # So policy runs at substep=0 of each decimation period.
             # ========================================================
-            d.ctrl[:] = target_dof_pos[actuator_to_joint_indices]
-
-            # Step simulation
-            mujoco.mj_step(m, d)
-            counter += 1
-
-            # Render
-            if counter % render_interval == 0:
-                viewer.sync()
-
-            # Track simulation time
-            sim_time = counter * simulation_dt
-
-            # ========================================================
-            # Policy step (every control_decimation sim steps)
-            # IsaacLab: decimation=4, so policy at 50Hz (0.005*4=0.02s)
-            # ========================================================
-            if counter % control_decimation == 0 and policy is not None:
+            if substep == 0 and policy is not None:
                 # --- Read MuJoCo state ---
                 quat = d.qpos[3:7].copy()  # quaternion [w,x,y,z]
 
-                # CRITICAL: MuJoCo freejoint qvel[3:6] is angular velocity
-                # in BODY frame (local frame), NOT world frame.
-                # This directly matches IsaacLab's base_ang_vel (body frame).
-                # NO rotation needed!
+                # MuJoCo freejoint qvel[3:6] is angular velocity in body frame
                 omega_body = d.qvel[3:6].copy()
 
                 # Joint positions and velocities (MuJoCo order)
@@ -530,9 +541,9 @@ if __name__ == "__main__":
                 for hist_buf, term_data in zip(obs_term_histories, current_terms):
                     hist_buf.append(term_data)
 
-                # --- Build full observation: per-term history, oldest→newest ---
-                # Layout: [ang_vel_hist(15), gravity_hist(15), cmd_hist(15),
-                #          jpos_hist(65), jvel_hist(65), act_hist(65)] = 240
+                # --- Build full observation: single frame (no history) ---
+                # Layout: [ang_vel(3), gravity(3), cmd(3),
+                #          jpos(13), jvel(13), act(13)] = 48
                 offset = 0
                 for hist_buf in obs_term_histories:
                     flat = hist_buf.flatten()
@@ -544,6 +555,23 @@ if __name__ == "__main__":
 
                 # --- Debug output ---
                 t_wall = time.time() - start
+                sim_time = counter * simulation_dt  # current sim time (before stepping)
+
+                # === Step 0/1 detailed output (matches IsaacLab format) ===
+                if policy_step_count <= 1:
+                    print(f"\n{'='*60}")
+                    print(f"  STEP {policy_step_count}")
+                    print(f"{'='*60}")
+                    print(f"\n  [Observation] shape=({num_obs},)")
+                    print(f"  obs = {np.array2string(obs, precision=4, separator=', ', max_line_width=120)}")
+                    print(f"\n  [DEBUG] default_angles_isaac = {np.array2string(default_angles_isaac, precision=4, separator=', ')}")
+                    print(f"  [DEBUG] qj_isaac             = {np.array2string(qj_isaac, precision=6, separator=', ')}")
+                    print(f"  [DEBUG] qj_rel               = {np.array2string(qj_rel, precision=6, separator=', ')}")
+                    print(f"\n  [Joint Positions (rad)] (Isaac BFS order)")
+                    for i_isaac, jname in enumerate(isaac_joint_order):
+                        mj_idx = isaac_to_mujoco[i_isaac]
+                        print(f"    [{i_isaac:2d}] {jname:30s}  pos={qj_isaac[i_isaac]:+.6f}  def={default_angles_isaac[i_isaac]:+.4f}  rel={qj_rel[i_isaac]:+.6f}  vel={dqj_isaac[i_isaac]:+.6f}")
+                    print()
 
                 if args.debug and policy_step_count < args.debug_steps:
                     print(f"\n{'='*70}")
@@ -551,7 +579,7 @@ if __name__ == "__main__":
                     print(f"  qpos[0:3] (pos):     {d.qpos[0:3]}")
                     print(f"  qpos[3:7] (quat):    {quat}  (w,x,y,z)")
                     print(f"  qvel[0:3] (lin_vel):  {d.qvel[0:3]}  (world frame)")
-                    print(f"  qvel[3:6] (ang_vel):  {omega_body}  (BODY frame, direct)")
+                    print(f"  qvel[3:6] (ang_vel):  {omega_body}  (body frame, direct)")
                     print(f"  height:               {d.qpos[2]:.4f}m")
                     print(f"  ncon:                 {d.ncon}")
                     print(f"  ---")
@@ -580,29 +608,30 @@ if __name__ == "__main__":
                     print(f"  obs shape={obs.shape}  obs[0:3]={obs[0:3]}  obs[3:6]={obs[3:6]}")
                     print(f"  cmd={cmd}")
 
-                if t_wall - last_print_time >= 2.0:
-                    last_print_time = t_wall
-                    pos = d.qpos[0:3]
-                    print(f"[sim_t={sim_time:5.1f}s wall_t={t_wall:5.1f}s] h={pos[2]:.3f}m pos=({pos[0]:+.2f},{pos[1]:+.2f}) "
-                          f"cmd=({cmd[0]:+.2f},{cmd[1]:+.2f},{cmd[2]:+.2f}) "
-                          f"ncon={d.ncon} act_max={np.max(np.abs(action_raw)):.2f}")
-
                 # --- Run policy inference ---
                 obs_tensor = torch.from_numpy(obs).unsqueeze(0)
-                action_raw = policy(obs_tensor).detach().numpy().squeeze()
+                action_raw_new = policy(obs_tensor).detach().numpy().squeeze()
 
                 # --- Clip actions (rsl_rl does this) ---
-                action_raw = np.clip(action_raw, -clip_actions, clip_actions)
+                action_raw = np.clip(action_raw_new, -clip_actions, clip_actions)
 
                 if args.debug and policy_step_count < args.debug_steps:
                     print(f"  >>> NEW action_raw: {np.array2string(action_raw, precision=4, separator=', ')}")
+
+                # === Print actions sent (matches IsaacLab format) ===
+                if policy_step_count == 0:
+                    print(f"\n  [Actions sent at step 0] (Isaac BFS order)")
+                    for i_isaac, jname in enumerate(isaac_joint_order):
+                        print(f"    [{i_isaac:2d}] {jname:30s}  action={action_raw[i_isaac]:+.6f}")
 
                 policy_step_count += 1
 
                 # --- Apply actions ---
                 # IsaacLab: target = action[i] * scale + default_joint_pos[i]
-                # action[i] is in Isaac BFS order (preserve_order=False),
-                # we map to MuJoCo joint index
+                # action[i] is in PhysX BFS order (preserve_order=False → target order).
+                # NOTE: resolve_matching_names with preserve_order=False returns TARGET
+                # list order (PhysX BFS), despite misleading docstring text.
+                # Confirmed by code: outer loop iterates list_of_strings (target).
                 for i_isaac in range(num_actions):
                     mj_idx = isaac_to_mujoco[i_isaac]
                     # action_scale=0.25, use_default_offset=True
@@ -612,18 +641,66 @@ if __name__ == "__main__":
 
                 if args.debug and policy_step_count <= args.debug_steps:
                     print(f"  >>> NEW target_dof_pos (MJ): {np.array2string(target_dof_pos, precision=4, separator=', ')}")
-                    print(f"  >>> Target per joint (Isaac order):")
+                    print(f"  >>> Target per joint (PhysX BFS order):")
                     for i_isaac, jname in enumerate(isaac_joint_order):
                         mj_idx = isaac_to_mujoco[i_isaac]
                         print(f"      [{i_isaac:2d}] {jname:14s}  act={action_raw[i_isaac]:+.4f}"
                               f"  target={target_dof_pos[mj_idx]:+.4f}"
                               f"  (def={default_angles[mj_idx]:+.4f} + {action_raw[i_isaac]:+.4f}*{action_scale})")
 
-                # Enforce joint limits (safety)
-                for i, jname in enumerate(mj_joint_names):
-                    if jname in joint_limits:
-                        low, high = joint_limits[jname]
-                        target_dof_pos[i] = np.clip(target_dof_pos[i], low, high)
+            # ========================================================
+            # Apply PD control via position actuators
+            # MuJoCo position actuator: torque = kp*(ctrl - q) - kv*dq
+            # This matches IsaacLab ImplicitActuatorCfg behavior.
+            # ========================================================
+            d.ctrl[:] = target_dof_pos[actuator_to_joint_indices]
+
+            # Step simulation
+            mujoco.mj_step(m, d)
+            counter += 1
+            substep += 1
+
+            # --- NaN safety: auto-reset if simulation diverges ---
+            if np.any(np.isnan(d.qpos)) or np.any(np.isnan(d.qvel)):
+                print(f"\n[NaN DETECTED at sim_t={counter * simulation_dt:.3f}s] Auto-resetting...")
+                d.qpos[0:3] = [0, 0, init_height]
+                d.qpos[3:7] = [0.7071068, 0.0, 0.0, 0.7071068]
+                d.qpos[7:] = default_angles
+                d.qvel[:] = 0
+                target_dof_pos[:] = default_angles
+                action_raw[:] = 0
+                for hist_buf in obs_term_histories:
+                    hist_buf.reset()
+                substep = 0
+                policy_step_count = 0
+                mujoco.mj_forward(m, d)
+                continue
+
+            # Record COM position (subtree_com[0] = whole-body COM, updated by mj_step)
+            com = d.subtree_com[0].copy()  # [x, y, z]
+            com_trajectory.append((counter * simulation_dt, com[0], com[1], com[2]))
+
+            # Reset substep counter at end of decimation period
+            if substep >= control_decimation:
+                substep = 0
+
+            # Track simulation time
+            sim_time = counter * simulation_dt
+
+            # Periodic COM print (works with or without policy)
+            t_wall = time.time() - start
+            if t_wall - last_print_time >= 2.0:
+                last_print_time = t_wall
+                pos = d.qpos[0:3]
+                com_pos = d.subtree_com[0]
+                print(f"[sim_t={sim_time:5.1f}s wall_t={t_wall:5.1f}s] h={pos[2]:.3f}m pos=({pos[0]:+.2f},{pos[1]:+.2f}) "
+                      f"COM=({com_pos[0]:+.3f},{com_pos[1]:+.3f},{com_pos[2]:.3f}) "
+                      f"cmd=({cmd[0]:+.2f},{cmd[1]:+.2f},{cmd[2]:+.2f}) "
+                      f"ncon={d.ncon} act_max={np.max(np.abs(action_raw)):.2f}")
+
+            # Render
+            if counter % render_interval == 0:
+                viewer.sync()
 
             # Real-time sync
             time_until_next_step = m.opt.timestep - (time.time() - step_start)
@@ -633,3 +710,63 @@ if __name__ == "__main__":
     if kb_controller:
         kb_controller.stop()
     print("Simulation completed.")
+
+    # ================================================================
+    # Plot COM trajectory
+    # ================================================================
+    if len(com_trajectory) > 0:
+        com_data = np.array(com_trajectory)  # (N, 4): time, x, y, z
+        t = com_data[:, 0]
+        cx, cy, cz = com_data[:, 1], com_data[:, 2], com_data[:, 3]
+
+        fig = plt.figure(figsize=(16, 10))
+        fig.suptitle('V6 Humanoid - COM Trajectory', fontsize=14)
+
+        # 1) XY trajectory (top-down view)
+        ax1 = fig.add_subplot(2, 2, 1)
+        ax1.plot(cx, cy, 'b-', linewidth=0.5, alpha=0.7)
+        ax1.plot(cx[0], cy[0], 'go', markersize=8, label='Start')
+        ax1.plot(cx[-1], cy[-1], 'r^', markersize=8, label='End')
+        ax1.set_xlabel('X (m)')
+        ax1.set_ylabel('Y (m)')
+        ax1.set_title('COM XY Trajectory (Top View)')
+        ax1.set_aspect('equal')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+
+        # 2) Z height over time
+        ax2 = fig.add_subplot(2, 2, 2)
+        ax2.plot(t, cz, 'r-', linewidth=0.5)
+        ax2.set_xlabel('Time (s)')
+        ax2.set_ylabel('Z (m)')
+        ax2.set_title('COM Height over Time')
+        ax2.grid(True, alpha=0.3)
+
+        # 3) X, Y over time
+        ax3 = fig.add_subplot(2, 2, 3)
+        ax3.plot(t, cx, 'b-', linewidth=0.5, label='X')
+        ax3.plot(t, cy, 'g-', linewidth=0.5, label='Y')
+        ax3.set_xlabel('Time (s)')
+        ax3.set_ylabel('Position (m)')
+        ax3.set_title('COM X/Y over Time')
+        ax3.legend()
+        ax3.grid(True, alpha=0.3)
+
+        # 4) 3D trajectory
+        ax4 = fig.add_subplot(2, 2, 4, projection='3d')
+        ax4.plot(cx, cy, cz, 'b-', linewidth=0.5, alpha=0.7)
+        ax4.scatter(cx[0], cy[0], cz[0], c='g', s=50, marker='o', label='Start')
+        ax4.scatter(cx[-1], cy[-1], cz[-1], c='r', s=50, marker='^', label='End')
+        ax4.set_xlabel('X (m)')
+        ax4.set_ylabel('Y (m)')
+        ax4.set_zlabel('Z (m)')
+        ax4.set_title('COM 3D Trajectory')
+        ax4.legend()
+
+        plt.tight_layout()
+
+        # Save figure
+        save_path = os.path.join(current_dir, 'com_trajectory.png')
+        plt.savefig(save_path, dpi=150)
+        print(f"COM trajectory plot saved to: {save_path}")
+        plt.show()

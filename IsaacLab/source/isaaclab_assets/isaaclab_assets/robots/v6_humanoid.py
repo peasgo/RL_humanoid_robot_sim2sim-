@@ -4,7 +4,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 
 V6_HUMANOID_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="/home/rl/RL-human_robot/URDF_Humanoid_legs_V6/urdf/URDF_Humanoid_legs_V6.usd",
+        usd_path="/home/rl/RL-human_robot/URDF_Humanoid_legs_V6/urdf/URDF_Humanoid_legs_V7.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -23,21 +23,21 @@ V6_HUMANOID_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.55),
-        rot=(1.0, 0.0, 0.0, 0.0),
+        pos=(0.0, 0.0, 0.56),
+        rot=(0.7071068, 0.0, 0.0, 0.7071068),
         joint_pos={
             "pelvis_link": 0.0,
-            "RHIPp": -0.2,
+            "RHIPp": 0.0,
             "RHIPy": 0.0,
             "RHIPr": 0.0,
-            "RKNEEp": 0.4,
-            "RANKLEp": -0.2,
+            "RKNEEp": 0.0,
+            "RANKLEp": 0.0,
             "RANKLEy": 0.0,
-            "LHIPp": -0.2,
+            "LHIPp": 0.0,
             "LHIPy": 0.0,
             "LHIPr": 0.0,
-            "LKNEEp": -0.4,
-            "LANKLEp": 0.2,
+            "LKNEEp": 0.0,
+            "LANKLEp": 0.0,
             "LANKLEy": 0.0,
         },
         joint_vel={".*": 0.0},

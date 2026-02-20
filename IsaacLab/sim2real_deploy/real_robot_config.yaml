@@ -1,76 +1,131 @@
 # ============================================================
-# V4 Quadruped Sim2Real 部署配置
-# 基于 mujoco_deploy_v4b 的 v4_robot.yaml
+# V6 Humanoid Sim2Real 部署配置
+# 所有参数来源于 IsaacLab 训练配置，确保 sim2real 一致性
 # ============================================================
 
-# 策略文件路径 (训练导出的 TorchScript .pt 文件)
-policy_path: "/home/rl/RL-human_robot/IsaacLab/logs/rsl_rl/v4_quadruped_flat/2026-02-15_03-51-01/exported/policy.pt"
+robot_name: "V6_Humanoid"
+
+# 策略模型路径（训练导出的 TorchScript .pt 文件）
+# 用户需要填写实际路径！
+policy_path: "FILL_IN_YOUR_POLICY_PATH"
 
 # ============================================================
-# 控制参数 (必须与训练环境一致)
+# 关节配置 - IsaacLab PhysX BFS 顺序
+# 这是策略输入/输出的关节顺序，由 PhysX 引擎的 BFS 遍历决定
+# 来源: IsaacLab/scripts/print_v6_joint_order.py 确认
 # ============================================================
-simulation_dt: 0.005          # Isaac Lab 仿真步长
-control_decimation: 4         # 每4个仿真步执行一次策略 => 控制频率 = 1/(0.005*4) = 50Hz
-control_dt: 0.02              # = simulation_dt * control_decimation = 20ms
+num_actions: 13
+num_obs: 48
+
+isaac_joint_order:
+  - pelvis_link   # [0]
+  - LHIPp         # [1]
+  - RHIPp         # [2]
+  - LHIPy         # [3]
+  - RHIPy         # [4]
+  - LHIPr         # [5]
+  - RHIPr         # [6]
+  - LKNEEp        # [7]
+  - RKNEEp        # [8]
+  - LANKLEp       # [9]
+  - RANKLEp       # [10]
+  - LANKLEy       # [11]
+  - RANKLEy       # [12]
 
 # ============================================================
-# PD 增益 (与训练环境 ImplicitActuatorCfg 一致)
-# 顺序: Isaac12 action order (PhysX DOF order, 不含 Waist_2)
-# LHIPp, RHIPp, LHIPy, RHIPy, LSDp, RSDp, LKNEEp, RKNEEP, LSDy, RSDy, LARMp, RARMp
+# 默认关节角度（弧度）- PhysX BFS 顺序，与 isaac_joint_order 对应
+# 来源: IsaacLab/source/isaaclab_assets/isaaclab_assets/robots/v6_humanoid.py
+#        ArticulationCfg.InitialStateCfg.joint_pos
 # ============================================================
-kps_isaac12: [150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150]
-kds_isaac12: [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15]
-
-# Waist_2 单独控制 (锁定在默认位置)
-kp_waist: 1000
-kd_waist: 100
-
-# ============================================================
-# 默认关节角度 (弧度)
-# Isaac13 joint order (PhysX DOF order):
-# [0]  LHIPp   = -0.78
-# [1]  RHIPp   =  0.78
-# [2]  LHIPy   =  0.0
-# [3]  RHIPy   =  0.0
-# [4]  Waist_2 =  3.14159
-# [5]  LSDp    =  0.6
-# [6]  RSDp    =  0.6
-# [7]  LKNEEp  = -1.0
-# [8]  RKNEEP  =  1.0
-# [9]  LSDy    =  0.0
-# [10] RSDy    =  0.0
-# [11] LARMp   =  1.4
-# [12] RARMp   = -1.4
-# ============================================================
-default_angles_isaac13:
-  LHIPp:   -0.78
-  RHIPp:    0.78
-  LHIPy:    0.0
-  RHIPy:    0.0
-  Waist_2:  3.14159
-  LSDp:     0.6
-  RSDp:     0.6
-  LKNEEp:  -1.0
-  RKNEEP:   1.0
-  LSDy:     0.0
-  RSDy:     0.0
-  LARMp:    1.4
-  RARMp:   -1.4
+default_angles:
+  - 0.0      # [0]  pelvis_link
+  - -0.2     # [1]  LHIPp
+  - -0.2     # [2]  RHIPp
+  - 0.0      # [3]  LHIPy
+  - 0.0      # [4]  RHIPy
+  - 0.0      # [5]  LHIPr
+  - 0.0      # [6]  RHIPr
+  - -0.4     # [7]  LKNEEp
+  - 0.4      # [8]  RKNEEp
+  - 0.2      # [9]  LANKLEp
+  - -0.2     # [10] RANKLEp
+  - 0.0      # [11] LANKLEy
+  - 0.0      # [12] RANKLEy
 
 # ============================================================
-# 观测缩放 (必须与训练环境完全一致)
+# 动作缩放
+# 来源: flat_env_cfg.py ActionsCfg → JointPositionActionCfg(scale=0.25)
+# 策略输出 → 目标关节角 = action * action_scale + default_angles
 # ============================================================
-ang_vel_scale: 0.2
-dof_pos_scale: 1.0
-dof_vel_scale: 0.05
 action_scale: 0.25
-cmd_scale: [1.0, 1.0, 1.0]
 
 # ============================================================
-# 策略维度
+# 观测缩放 - 必须与训练环境完全一致
+# 来源: flat_env_cfg.py ObservationsCfg
 # ============================================================
-num_actions: 12
-num_obs: 47
+ang_vel_scale: 0.2    # ObsTerm(func=mdp.base_ang_vel, scale=0.2)
+dof_pos_scale: 1.0    # ObsTerm(func=mdp.joint_pos_rel) 默认 scale=1.0
+dof_vel_scale: 0.05   # ObsTerm(func=mdp.joint_vel_rel, scale=0.05)
+
+# ============================================================
+# PD 增益 - 按 isaac_joint_order 排列
+# 来源: v6_humanoid.py ActuatorCfg
+#   pelvis: stiffness=150, damping=15
+#   hip:    stiffness=120, damping=12
+#   knee:   stiffness=120, damping=12
+#   ankle:  stiffness=80,  damping=8
+# ============================================================
+kp: [150.0,                                    # pelvis_link
+     120.0, 120.0, 120.0, 120.0, 120.0, 120.0, # LHIPp, RHIPp, LHIPy, RHIPy, LHIPr, RHIPr
+     120.0, 120.0,                               # LKNEEp, RKNEEp
+     80.0, 80.0, 80.0, 80.0]                    # LANKLEp, RANKLEp, LANKLEy, RANKLEy
+
+kd: [15.0,                                     # pelvis_link
+     12.0, 12.0, 12.0, 12.0, 12.0, 12.0,       # LHIPp, RHIPp, LHIPy, RHIPy, LHIPr, RHIPr
+     12.0, 12.0,                                 # LKNEEp, RKNEEp
+     8.0, 8.0, 8.0, 8.0]                        # LANKLEp, RANKLEp, LANKLEy, RANKLEy
+
+# ============================================================
+# 电机 ID 映射：isaac_joint_order[i] 对应的实际电机 CAN ID
+# ⚠️ 需要根据实际硬件填写！
+# 示例：如果 pelvis_link 对应电机 CAN ID 0，LHIPp 对应 1，以此类推
+# ============================================================
+motor_ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+# ============================================================
+# 关节方向：1 表示正方向一致，-1 表示需要取反
+# ⚠️ 需要根据实际硬件填写！
+# 注意：URDF 中左右腿某些关节轴方向相反（如 LKNEEp 和 RKNEEp 默认角度符号相反）
+# 如果电机安装方向统一，可能需要取反某些关节
+# ============================================================
+joint_sign: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+# ============================================================
+# 控制频率
+# 来源: flat_env_cfg.py → decimation=4, sim.dt=0.005
+# control_dt = decimation * sim_dt = 4 * 0.005 = 0.02s → 50Hz
+# ============================================================
+control_dt: 0.02
+
+# ============================================================
+# IMU 坐标变换
+# 重要：V6 URDF 从 SolidWorks 导出时是 Y-up，IsaacLab 中通过
+# init_state.rot=(0.7071068, 0, 0, 0.7071068) 旋转到 Z-up 世界坐标系。
+# 机器人站直时，body frame 中的重力投影向量应为 [0, -1, 0]
+#
+# imu_rotation: 从 IMU 传感器坐标系 到 URDF body frame 的旋转矩阵
+# （行优先 3x3，即 [R00,R01,R02, R10,R11,R12, R20,R21,R22]）
+# ⚠️ 需要根据实际 IMU 安装方向调整！
+# ============================================================
+imu_rotation: [1,0,0, 0,1,0, 0,0,1]
+
+# ============================================================
+# 安全限制
+# ============================================================
+torque_limit: 30.0     # 单关节最大力矩 (Nm)
+velocity_limit: 10.0   # 单关节最大速度 (rad/s)
+clip_obs: 100.0        # 观测裁剪（rsl_rl 默认值）
+clip_actions: 100.0    # 动作裁剪（rsl_rl 默认值）
 
 # ============================================================
 # 初始速度指令
@@ -78,61 +133,31 @@ num_obs: 47
 cmd_init: [0.0, 0.0, 0.0]
 
 # ============================================================
-# V4 坐标系重映射 (必须开启, 与训练一致)
-# V4 URDF: forward=body_z, lateral=body_x, vertical=body_y
-# ============================================================
-v4_coordinate_remap: true
-
-# ============================================================
-# 安全限制
-# ============================================================
-max_action_clip: 5.0          # 裁剪策略输出的最大绝对值
-torque_limit: 150.0           # 单关节最大力矩 (N·m)
-velocity_limit: 10.0          # 单关节最大速度 (rad/s)
-
-# 关节角度限制 (弧度, 与 URDF 一致)
-joint_limits:
-  LHIPp:   [-1.57, 1.57]
-  RHIPp:   [-1.57, 1.57]
-  LHIPy:   [-0.14, 1.4]
-  RHIPy:   [-1.4, 0.14]
-  LSDp:    [-1.57, 1.57]
-  RSDp:    [-1.57, 1.57]
-  LKNEEp:  [-2.3, 0.29]
-  RKNEEP:  [-0.29, 2.3]
-  LSDy:    [-0.14, 1.4]
-  RSDy:    [-1.4, 0.14]
-  LARMp:   [-0.29, 2.3]
-  RARMp:   [-2.3, 0.29]
-  Waist_2: [-6.3, 6.3]
-
-# ============================================================
-# 硬件通信配置 (根据你的实际硬件修改)
+# 硬件通信配置
+# ⚠️ 根据实际硬件修改！
 # ============================================================
 hardware:
-  # 通信方式: "serial" / "can" / "ethercat" / "ros2" / "custom"
-  interface: "serial"
+  # 通信方式: "can" / "serial" / "ros2" / "custom"
+  interface: "can"
+
+  # CAN 配置
+  can:
+    channel: "can0"
+    bitrate: 1000000
 
   # 串口配置 (interface=serial 时使用)
   serial:
     port: "/dev/ttyUSB0"
     baudrate: 1000000
 
-  # CAN 配置 (interface=can 时使用)
-  can:
-    channel: "can0"
-    bitrate: 1000000
-
   # ROS2 配置 (interface=ros2 时使用)
   ros2:
-    joint_command_topic: "/v4_robot/joint_commands"
-    joint_state_topic: "/v4_robot/joint_states"
-    imu_topic: "/v4_robot/imu"
+    joint_command_topic: "/v6_robot/joint_commands"
+    joint_state_topic: "/v6_robot/joint_states"
+    imu_topic: "/v6_robot/imu"
 
   # IMU 配置
   imu:
-    # IMU 数据来源: "embedded" (电机驱动板内置) / "external" (外部IMU)
-    source: "embedded"
-    # 外部 IMU 串口 (source=external 时使用)
-    port: "/dev/ttyUSB1"
+    source: "external"       # "embedded" (电机驱动板内置) / "external" (外部IMU)
+    port: "/dev/ttyUSB1"     # 外部 IMU 串口
     baudrate: 115200

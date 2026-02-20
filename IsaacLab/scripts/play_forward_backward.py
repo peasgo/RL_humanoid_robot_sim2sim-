@@ -12,7 +12,7 @@ Usage:
 
   # 指定checkpoint
   isaaclab -p IsaacLab/scripts/play_forward_backward.py --task Isaac-Velocity-Flat-V6-Humanoid-v0 --num_envs 1 --forward_vel 0.5 \
-    --checkpoint /home/rl/RL-human_robot/IsaacLab/logs/rsl_rl/v6_humanoid_flat/2026-02-19_11-55-18/model_9000.pt
+    --checkpoint /home/rl/RL-human_robot/IsaacLab/logs/rsl_rl/v6_humanoid_flat/2026-02-18_12-58-46/model_6000.pt
 """
 
 import argparse
@@ -69,14 +69,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
 
     # Fix command ranges to the requested velocity
-    env_cfg.commands.base_velocity.ranges.lin_vel_x = (args_cli.forward_vel, args_cli.forward_vel)
-    env_cfg.commands.base_velocity.ranges.lin_vel_y = (args_cli.lateral_vel, args_cli.lateral_vel)
+    # Robot forward direction is vy (not vx)
+    env_cfg.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.0)
+    env_cfg.commands.base_velocity.ranges.lin_vel_y = (args_cli.forward_vel, args_cli.forward_vel)
     env_cfg.commands.base_velocity.ranges.ang_vel_z = (args_cli.yaw_vel, args_cli.yaw_vel)
 
-    # Disable randomization for clean playback
+    # Match training PLAY config: only disable external forces and push
     if hasattr(env_cfg, "events"):
         env_cfg.events.base_external_force_torque = None
         env_cfg.events.push_robot = None
+    # Disable observation noise (same as PLAY config)
+    env_cfg.observations.policy.enable_corruption = False
 
     # Resolve checkpoint
     if args_cli.checkpoint:
@@ -110,9 +113,36 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     dt = env.unwrapped.step_dt
     obs, _ = env.get_observations()
 
+    robot = env.unwrapped.scene["robot"]
+    joint_names = robot.joint_names
+
     print(f"\n{'='*60}")
     print(f"  Command: vx={args_cli.forward_vel:+.2f}  vy={args_cli.lateral_vel:+.2f}  wz={args_cli.yaw_vel:+.2f}")
+    print(f"  Joint names: {joint_names}")
     print(f"{'='*60}\n")
+
+    def print_step_details(step_idx, obs_tensor, robot_ref):
+        """Print observation and joint angles for a given step."""
+        obs_np = obs_tensor[0].cpu().numpy()
+        joint_pos = robot_ref.data.joint_pos[0].cpu().numpy()
+        joint_vel = robot_ref.data.joint_vel[0].cpu().numpy()
+
+        print(f"\n{'='*60}")
+        print(f"  STEP {step_idx}")
+        print(f"{'='*60}")
+
+        # Observation vector
+        print(f"\n  [Observation] shape={obs_np.shape}")
+        print(f"  obs = {np.array2string(obs_np, precision=4, separator=', ', max_line_width=120)}")
+
+        # Joint positions (angles)
+        print(f"\n  [Joint Positions (rad)]")
+        for i, name in enumerate(joint_names):
+            print(f"    [{i:2d}] {name:30s}  pos={joint_pos[i]:+.6f}  vel={joint_vel[i]:+.6f}")
+        print()
+
+    # --- Step 0: before any action ---
+    print_step_details(0, obs, robot)
 
     step_count = 0
     print_interval = int(1.0 / dt)
@@ -124,6 +154,16 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             obs, _, _, _ = env.step(actions)
 
             step_count += 1
+
+            # --- Step 1: after first action ---
+            if step_count == 1:
+                robot = env.unwrapped.scene["robot"]
+                act_np = actions[0].cpu().numpy()
+                print(f"\n  [Actions sent at step 0]")
+                for i, name in enumerate(joint_names):
+                    print(f"    [{i:2d}] {name:30s}  action={act_np[i]:+.6f}")
+                print_step_details(1, obs, robot)
+
             if step_count % print_interval == 0:
                 robot = env.unwrapped.scene["robot"]
                 root_quat_t = robot.data.root_quat_w

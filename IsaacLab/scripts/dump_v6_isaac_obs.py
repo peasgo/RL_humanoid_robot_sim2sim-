@@ -1,139 +1,124 @@
-"""Dump Isaac Lab observations for V6 humanoid - for comparison with MuJoCo deployment.
-Run with:
-  cd IsaacLab
-  python scripts/dump_v6_isaac_obs.py --num_envs 1 --headless
+"""Dump V6 humanoid PhysX BFS joint order and default positions.
+
+Run: cd IsaacLab && python scripts/dump_v6_isaac_obs.py --headless
 """
 import argparse
 import sys
 
 from isaaclab.app import AppLauncher
 
-parser = argparse.ArgumentParser(description="Dump V6 humanoid Isaac obs for sim2sim debug")
-parser.add_argument("--num_envs", type=int, default=1)
-parser.add_argument("--checkpoint", type=str, default=None)
-parser.add_argument("--steps", type=int, default=20)
+parser = argparse.ArgumentParser()
 AppLauncher.add_app_launcher_args(parser)
-args_cli, hydra_args = parser.parse_known_args()
-sys.argv = [sys.argv[0]] + hydra_args
-
+args_cli = parser.parse_args()
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
-import gymnasium as gym
-import os
 import torch
 import numpy as np
+import isaaclab.sim as sim_utils
+from isaaclab.assets import Articulation
+from isaaclab_assets.robots.v6_humanoid import V6_HUMANOID_CFG
 
-from rsl_rl.runners import OnPolicyRunner
-from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper
-import isaaclab_tasks
-from isaaclab_tasks.utils import get_checkpoint_path
-from isaaclab_tasks.utils.hydra import hydra_task_config
+sim = sim_utils.SimulationContext(sim_utils.SimulationCfg(dt=0.005))
 
+cfg = sim_utils.GroundPlaneCfg()
+cfg.func("/World/ground", cfg)
 
-@hydra_task_config("Isaac-Velocity-Flat-V6-Humanoid-v0", "rsl_rl_cfg_entry_point")
-def main(env_cfg, agent_cfg):
-    env_cfg.scene.num_envs = args_cli.num_envs
-    env_cfg.seed = 42
-    env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
+robot_cfg = V6_HUMANOID_CFG.replace(prim_path="/World/envs/env_0/Robot")
+robot = Articulation(cfg=robot_cfg)
 
-    # Disable randomization
-    env_cfg.events.push_robot = None
-    env_cfg.events.base_external_force_torque = None
-    env_cfg.events.add_base_mass = None
-    env_cfg.events.physics_material = None
-    env_cfg.observations.policy.enable_corruption = False
+sim.reset()
+robot.update(sim.cfg.dt)
 
-    log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)
-    log_root_path = os.path.abspath(log_root_path)
+# ================================================================
+# 1. Print PhysX BFS joint order
+# ================================================================
+print("\n" + "=" * 70)
+print("V6 Humanoid - PhysX BFS Joint Order (robot.joint_names)")
+print("=" * 70)
+default_pos = robot.data.default_joint_pos[0].cpu().numpy()
+for i, name in enumerate(robot.joint_names):
+    print(f"  [{i:2d}] {name:20s}  default={default_pos[i]:+.4f}")
+print(f"\nTotal joints: {robot.num_joints}")
 
-    if args_cli.checkpoint:
-        resume_path = args_cli.checkpoint
-    else:
-        resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
+# ================================================================
+# 2. Test find_joints with ActionsCfg joint_names
+# ================================================================
+action_joint_names = [
+    "pelvis_link",
+    "RHIPp", "RHIPy", "RHIPr", "RKNEEp", "RANKLEp", "RANKLEy",
+    "LHIPp", "LHIPy", "LHIPr", "LKNEEp", "LANKLEp", "LANKLEy",
+]
 
-    print(f"[INFO] Loading checkpoint: {resume_path}")
+ids_false, names_false = robot.find_joints(action_joint_names, preserve_order=False)
+ids_true, names_true = robot.find_joints(action_joint_names, preserve_order=True)
 
-    env = gym.make("Isaac-Velocity-Flat-V6-Humanoid-v0", cfg=env_cfg)
-    env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
+print(f"\n{'='*70}")
+print("find_joints(preserve_order=False) — ACTUAL policy action/obs order:")
+print("(This is what the trained policy uses)")
+print("=" * 70)
+for i, (jid, jname) in enumerate(zip(ids_false, names_false)):
+    print(f"  policy[{i:2d}] -> joint_id={jid:2d} name={jname:20s} default={default_pos[jid]:+.4f}")
 
-    ppo_runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device)
-    ppo_runner.load(resume_path)
-    policy = ppo_runner.get_inference_policy(device=env.unwrapped.device)
+print(f"\n{'='*70}")
+print("find_joints(preserve_order=True) — config list order:")
+print("=" * 70)
+for i, (jid, jname) in enumerate(zip(ids_true, names_true)):
+    print(f"  config[{i:2d}] -> joint_id={jid:2d} name={jname:20s} default={default_pos[jid]:+.4f}")
 
-    obs, _ = env.get_observations()
+# ================================================================
+# 3. Compare with current YAML isaac_joint_order
+# ================================================================
+yaml_isaac_order = [
+    'pelvis_link',
+    'LHIPp', 'RHIPp',
+    'LHIPy', 'RHIPy',
+    'LHIPr', 'RHIPr',
+    'LKNEEp', 'RKNEEp',
+    'LANKLEp', 'RANKLEp',
+    'LANKLEy', 'RANKLEy',
+]
 
-    for step in range(args_cli.steps):
-        with torch.inference_mode():
-            # Set zero velocity command
-            cmd_manager = env.unwrapped.command_manager
-            cmd = cmd_manager.get_command("base_velocity")
-            cmd[:, 0] = 0.0
-            cmd[:, 1] = 0.0
-            cmd[:, 2] = 0.0
+print(f"\n{'='*70}")
+print("COMPARISON: YAML isaac_joint_order vs actual PhysX BFS")
+print("=" * 70)
+mismatch = False
+for i, (yaml_name, actual_name) in enumerate(zip(yaml_isaac_order, names_false)):
+    match = "✓" if yaml_name == actual_name else "✗ MISMATCH!"
+    if yaml_name != actual_name:
+        mismatch = True
+    print(f"  [{i:2d}] YAML: {yaml_name:20s}  Actual: {actual_name:20s}  {match}")
 
-            actions = policy(obs)
+if mismatch:
+    print("\n*** MISMATCH DETECTED! ***")
+    print("The YAML isaac_joint_order does NOT match the actual PhysX BFS order.")
+    print("This is likely the cause of sim2sim failure!")
+    print("\nCorrect isaac_joint_order for YAML:")
+    print("isaac_joint_order:")
+    for name in names_false:
+        print(f"  - {name}")
+    print("\naction_joint_order (same, since preserve_order=False):")
+    print("action_joint_order:")
+    for name in names_false:
+        print(f"  - {name}")
+else:
+    print("\n✓ YAML isaac_joint_order matches actual PhysX BFS order.")
 
-            robot = env.unwrapped.scene["robot"]
+# ================================================================
+# 4. Print MuJoCo-compatible mapping
+# ================================================================
+mj_order = [
+    'pelvis_link',
+    'RHIPp', 'RHIPy', 'RHIPr', 'RKNEEp', 'RANKLEp', 'RANKLEy',
+    'LHIPp', 'LHIPy', 'LHIPr', 'LKNEEp', 'LANKLEp', 'LANKLEy',
+]
 
-            o = obs[0].detach().cpu().numpy()
-            a = actions[0].detach().cpu().numpy()
-            joint_names = robot.joint_names
+print(f"\n{'='*70}")
+print("isaac_to_mujoco mapping (for run_v6_humanoid.py):")
+print("=" * 70)
+for i_isaac, jname in enumerate(names_false):
+    mj_idx = mj_order.index(jname)
+    print(f"  isaac[{i_isaac:2d}] {jname:20s} -> mujoco[{mj_idx:2d}] {mj_order[mj_idx]}")
 
-            print(f"\n{'='*70}")
-            print(f"[Isaac Step {step}]")
-            print(f"  root_pos_w:         {robot.data.root_pos_w[0].cpu().numpy()}")
-            print(f"  root_quat_w (wxyz): {robot.data.root_quat_w[0].cpu().numpy()}")
-            print(f"  root_ang_vel_b:     {robot.data.root_ang_vel_b[0].cpu().numpy()}")
-            print(f"  projected_gravity_b:{robot.data.projected_gravity_b[0].cpu().numpy()}")
-            print(f"  height:             {robot.data.root_pos_w[0, 2].item():.4f}m")
-            print(f"  joint_names:        {joint_names}")
-
-            # Per-joint state
-            jpos = robot.data.joint_pos[0].cpu().numpy()
-            jdef = robot.data.default_joint_pos[0].cpu().numpy()
-            jvel = robot.data.joint_vel[0].cpu().numpy()
-            print(f"\n  --- Joint state (Isaac order) ---")
-            for i, jname in enumerate(joint_names):
-                print(f"    [{i:2d}] {jname:14s}  pos={jpos[i]:+.6f}  def={jdef[i]:+.4f}"
-                      f"  rel={jpos[i]-jdef[i]:+.6f}  vel={jvel[i]:+.6f}")
-
-            # Per-element observation (matching compare_with_isaac.py format)
-            print(f"\n  --- Full observation (48 dims, element by element) ---")
-            obs_labels = []
-            obs_labels.append(("obs[0]", "ang_vel_x * 0.2"))
-            obs_labels.append(("obs[1]", "ang_vel_y * 0.2"))
-            obs_labels.append(("obs[2]", "ang_vel_z * 0.2"))
-            obs_labels.append(("obs[3]", "gravity_x"))
-            obs_labels.append(("obs[4]", "gravity_y"))
-            obs_labels.append(("obs[5]", "gravity_z"))
-            obs_labels.append(("obs[6]", "cmd_vx"))
-            obs_labels.append(("obs[7]", "cmd_vy"))
-            obs_labels.append(("obs[8]", "cmd_wz"))
-            for i, jname in enumerate(joint_names):
-                obs_labels.append((f"obs[{9+i}]", f"pos_rel_{jname}"))
-            for i, jname in enumerate(joint_names):
-                obs_labels.append((f"obs[{22+i}]", f"vel_{jname}*0.05"))
-            for i, jname in enumerate(joint_names):
-                obs_labels.append((f"obs[{35+i}]", f"last_act_{jname}"))
-
-            for idx, (label, desc) in enumerate(obs_labels):
-                if idx < len(o):
-                    print(f"    {label:8s} {desc:25s} = {o[idx]:+.8f}")
-
-            # Action per joint
-            print(f"\n  --- Action ({len(a)} dims) ---")
-            for i, jname in enumerate(joint_names):
-                if i < len(a):
-                    target = a[i] * 0.25 + jdef[i]
-                    print(f"    [{i:2d}] {jname:14s}  act={a[i]:+.6f}"
-                          f"  target={target:+.6f}  (def={jdef[i]:+.4f})")
-
-            obs, _, _, _ = env.step(actions)
-
-    env.close()
-
-
-if __name__ == "__main__":
-    main()
-    simulation_app.close()
+print(f"\n{'='*70}")
+simulation_app.close()

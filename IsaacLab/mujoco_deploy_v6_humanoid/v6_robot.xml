@@ -3,13 +3,13 @@
 
     <default>
         <default class="v6robot">
-            <joint damping="0" armature="0.01" frictionloss="0.0"/>
+            <!-- damping=1, armature=0.1: match old mujoco_deploy for stability -->
+            <joint damping="0" armature="0.1" frictionloss="0.0"/>
             <geom contype="0" conaffinity="0"/>
         </default>
         <default class="collision">
-            <geom type="mesh" group="1" condim="4" friction="1.0 0.3 0.01"
-                  contype="1" conaffinity="2"
-                  solref="0.004 1" solimp="0.9 0.95 0.001"/>
+            <geom type="mesh" group="1" condim="3" friction="1.0 0.05 0.001"
+                  contype="1" conaffinity="2"/>
         </default>
     </default>
 
@@ -34,7 +34,7 @@
         <!-- base_link with freejoint, init height=0.55, rot 90deg around X -->
         <body name="base_link" pos="0 0 0.55" quat="0.7071068 0.0 0.0 0.7071068" childclass="v6robot">
             <freejoint/>
-            <inertial pos="0 -0.00116688 0" mass="6.0"
+            <inertial pos="0 -0.00116688 0" mass="2"
                       diaginertia="6.36249e-05 6.36509e-05 5.21136e-05"/>
             <geom type="mesh" rgba="1 1 1 1" mesh="base_link"/>
             <geom type="mesh" mesh="base_link" class="collision"/>
@@ -139,6 +139,7 @@
     </contact>
 
     <actuator>
+        <!-- Position actuators: force = kp*(ctrl - q) - kv*dq -->
         <!-- Pelvis -->
         <position name="pelvis_link" joint="pelvis_link" kp="150" kv="15" forcerange="-200 200"/>
         <!-- Right Leg -->
