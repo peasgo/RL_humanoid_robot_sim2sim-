@@ -219,7 +219,7 @@ class CommandsCfg:
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(10.0, 10.0),
-        rel_standing_envs=0.15,
+        rel_standing_envs=0.10,
         rel_heading_envs=1.0,
         heading_command=False,
         debug_vis=True,
@@ -356,7 +356,7 @@ class RewardsCfg:
 
     track_lin_vel_xy = RewTerm(
         func=mdp.track_lin_vel_xy_yaw_frame_exp,
-        weight=1.0,
+        weight=2.0,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
     track_ang_vel_z = RewTerm(
@@ -389,13 +389,13 @@ class RewardsCfg:
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-5.0)
     base_height = RewTerm(
         func=base_height_l2,
-        weight=-10.0,
+        weight=-30.0,
         params={"target_height": 0.515},
     )
 
     gait = RewTerm(
         func=feet_gait,
-        weight=0.5,
+        weight=1.0,
         params={
             "period": 0.8,
             "offset": [0.0, 0.5],
@@ -434,10 +434,20 @@ class RewardsCfg:
 
     standing_still = RewTerm(
         func=feet_contact_without_cmd,
-        weight=0.5,
+        weight=0.3,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
             "command_name": "base_velocity",
+        },
+    )
+
+    feet_air_time = RewTerm(
+        func=mdp.feet_air_time_positive_biped,
+        weight=0.25,
+        params={
+            "command_name": "base_velocity",
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
+            "threshold": 0.4,
         },
     )
 
