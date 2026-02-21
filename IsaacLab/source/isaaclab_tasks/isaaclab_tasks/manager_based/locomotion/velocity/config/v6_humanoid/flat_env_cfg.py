@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import torch
 
 from isaaclab.managers import RewardTermCfg as RewTerm
@@ -24,6 +25,12 @@ from isaaclab_assets.robots.v6_humanoid import V6_HUMANOID_CFG
 
 
 FEET_BODIES = ["RANKLEy", "LANKLEy"]
+
+
+# Default feet XY distance at zero pose (~0.18m for V6, from URDF FK)
+_DEFAULT_FEET_DIST = 0.18
+_FEET_MIN_DIST = round(_DEFAULT_FEET_DIST * 0.5, 4)
+_FEET_MAX_DIST = round(_DEFAULT_FEET_DIST * 2.0, 4)
 
 
 def energy(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
@@ -180,6 +187,42 @@ def joint_deviation_l1(
     )
 
 
+def com_projection_reward(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    sensor_cfg: SceneEntityCfg = SceneEntityCfg("contact_forces"),
+    std: float = 0.05,
+) -> torch.Tensor:
+    """奖励COM的XY投影接近力加权的支撑中心(CoP)。
+
+    CoP = Σ(F_z_i × pos_i) / Σ(F_z_i)
+    这比几何中点更物理准确。
+    """
+    asset = env.scene[asset_cfg.name]
+    contact_sensor = env.scene.sensors[sensor_cfg.name]
+
+    # 获取脚部body的索引
+    foot_indices = asset_cfg.body_ids
+
+    # 获取脚部世界位置 [N, num_feet, 3]
+    foot_pos = asset.data.body_pos_w[:, foot_indices, :]
+
+    # 获取接触力Z分量（法向力）
+    contact_fz = contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, 2]  # [N, num_feet]
+    contact_fz = torch.clamp(contact_fz, min=0.0)  # 只取正向力（压力）
+
+    # 力加权计算CoP（只取XY）
+    total_fz = contact_fz.sum(dim=1, keepdim=True).clamp(min=1.0)  # [N, 1]
+    cop_xy = (foot_pos[:, :, :2] * contact_fz.unsqueeze(-1)).sum(dim=1) / total_fz  # [N, 2]
+
+    # COM投影
+    com_xy = asset.data.root_pos_w[:, :2]  # [N, 2]
+
+    # 高斯奖励，std放宽到0.05（允许正常行走时COM在CoP附近有偏移）
+    dist = torch.norm(com_xy - cop_xy, dim=-1)
+    return torch.exp(-dist ** 2 / (std ** 2))
+
+
 @configclass
 class V6HumanoidSceneCfg(InteractiveSceneCfg):
 
@@ -219,7 +262,7 @@ class CommandsCfg:
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(10.0, 10.0),
-        rel_standing_envs=0.10,
+        rel_standing_envs=0.20,
         rel_heading_envs=1.0,
         heading_command=False,
         debug_vis=True,
@@ -303,7 +346,7 @@ class EventCfg:
         mode="startup",
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
-            "mass_distribution_params": (-0.5, 3.0),
+            "mass_distribution_params": (-1.5, 5.0),
             "operation": "add",
         },
     )
@@ -389,13 +432,13 @@ class RewardsCfg:
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-5.0)
     base_height = RewTerm(
         func=base_height_l2,
-        weight=-30.0,
-        params={"target_height": 0.515},
+        weight=-10.0,
+        params={"target_height": 0.50},
     )
 
     gait = RewTerm(
         func=feet_gait,
-        weight=1.0,
+        weight=0.5,
         params={
             "period": 0.8,
             "offset": [0.0, 0.5],
@@ -418,7 +461,7 @@ class RewardsCfg:
         params={
             "std": 0.05,
             "tanh_mult": 2.0,
-            "target_height": 0.08,
+            "target_height": 0.1,
             "asset_cfg": SceneEntityCfg("robot", body_names=FEET_BODIES),
         },
     )
@@ -434,49 +477,10 @@ class RewardsCfg:
 
     standing_still = RewTerm(
         func=feet_contact_without_cmd,
-        weight=0.3,
+        weight=0.5,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
             "command_name": "base_velocity",
-        },
-    )
-
-    feet_air_time = RewTerm(
-        func=mdp.feet_air_time_positive_biped,
-        weight=0.25,
-        params={
-            "command_name": "base_velocity",
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
-            "threshold": 0.4,
-        },
-    )
-
-    # --- new rewards ---
-    feet_contact_num = RewTerm(
-        func=feet_contact_number,
-        weight=0.2,
-        params={
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FEET_BODIES),
-        },
-    )
-    feet_dist = RewTerm(
-        func=feet_distance,
-        weight=0.3,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=FEET_BODIES),
-            "min_dist": 0.1,
-            "max_dist": 0.35,
-        },
-    )
-    base_acc = RewTerm(
-        func=base_acc_l2,
-        weight=-0.005,
-    )
-    ankle_movement = RewTerm(
-        func=ankle_movement_reward,
-        weight=0.01,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*ANKLE.*"]),
         },
     )
 
@@ -488,12 +492,12 @@ class TerminationsCfg:
 
     base_height = DoneTerm(
         func=mdp.root_height_below_minimum,
-        params={"minimum_height": 0.2},
+        params={"minimum_height": 0.25},
     )
 
     bad_orientation = DoneTerm(
         func=mdp.bad_orientation,
-        params={"limit_angle": 0.8},
+        params={"limit_angle": 0.6},
     )
 
 

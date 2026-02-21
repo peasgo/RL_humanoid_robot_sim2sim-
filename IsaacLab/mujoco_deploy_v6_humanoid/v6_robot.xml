@@ -8,7 +8,8 @@
             <geom contype="0" conaffinity="0"/>
         </default>
         <default class="collision">
-            <geom type="mesh" group="1" condim="3" friction="1.0 0.05 0.001"
+            <geom type="mesh" group="1" condim="4" friction="1.5 0.5 0.01"
+                  solref="0.005 1"
                   contype="1" conaffinity="2"/>
         </default>
     </default>
@@ -32,10 +33,10 @@
 
     <worldbody>
         <!-- base_link with freejoint, init height=0.55, rot 90deg around X -->
-        <body name="base_link" pos="0 0 0.55" quat="0.7071068 0.0 0.0 0.7071068" childclass="v6robot">
+        <body name="base_link" pos="0 0 0.56" quat="0.7071068 0.0 0.0 0.7071068" childclass="v6robot">
             <freejoint/>
-            <inertial pos="0 -0.00116688 0" mass="2"
-                      diaginertia="6.36249e-05 6.36509e-05 5.21136e-05"/>
+            <inertial pos="0 -0.00116688 0" mass="6.0"
+                      diaginertia="6.365e-05 6.362e-05 5.211e-05"/>
             <geom type="mesh" rgba="1 1 1 1" mesh="base_link"/>
             <geom type="mesh" mesh="base_link" class="collision"/>
 
